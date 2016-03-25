@@ -396,6 +396,7 @@ void Plane::set_mode(enum FlightMode mode)
     case STABILIZE:
     case TRAINING:
     case FLY_BY_WIRE_A:
+    case FLY_BY_WIRE_EW:            //EWING
         auto_throttle_mode = false;
         break;
 
@@ -496,6 +497,7 @@ bool Plane::mavlink_set_mode(uint8_t mode)
     case TRAINING:
     case ACRO:
     case FLY_BY_WIRE_A:
+    case FLY_BY_WIRE_EW:
     case AUTOTUNE:
     case FLY_BY_WIRE_B:
     case CRUISE:
@@ -675,6 +677,9 @@ void Plane::print_flight_mode(AP_HAL::BetterStream *port, uint8_t mode)
         break;
     case FLY_BY_WIRE_A:
         port->print("FBW_A");
+        break;
+    case FLY_BY_WIRE_EW:
+        port->print("FBW_EWING");
         break;
     case AUTOTUNE:
         port->print("AUTOTUNE");

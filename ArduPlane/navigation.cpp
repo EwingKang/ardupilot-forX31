@@ -51,6 +51,7 @@ void Plane::loiter_angle_update(void)
 
 //****************************************************************
 // Function that will calculate the desired direction to fly and distance
+// EWING navigation here!
 //****************************************************************
 void Plane::navigate()
 {

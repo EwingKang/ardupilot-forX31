@@ -39,13 +39,13 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(ahrs_update,           400,   6400),
     SCHED_TASK(update_speed_height,    50,   1600),
     SCHED_TASK(update_flight_mode,    400,   1400),
-    SCHED_TASK(stabilize,             400,   3500),
+    SCHED_TASK(stabilize,             400,   3500),     // EWING stabilize controller
     SCHED_TASK(set_servos,            400,   1600),
     SCHED_TASK(read_control_switch,     7,   1000),
     SCHED_TASK(gcs_retry_deferred,     50,   1000),
     SCHED_TASK(update_GPS_50Hz,        50,   2500),
     SCHED_TASK(update_GPS_10Hz,        10,   2500),
-    SCHED_TASK(navigate,               10,   3000),
+    SCHED_TASK(navigate,               10,   3000),     // EWING navigation controller
     SCHED_TASK(update_compass,         10,   1200),
     SCHED_TASK(read_airspeed,          10,   1200),
     SCHED_TASK(update_alt,             10,   3400),
@@ -646,7 +646,42 @@ void Plane::update_flight_mode(void)
         }
         break;
     }
-
+    
+    //EWING my mode
+    case FLY_BY_WIRE_EW: {
+        // set nav_roll and nav_pitch using sticks
+        nav_roll_cd  = channel_roll->norm_input() * roll_limit_cd;
+        nav_roll_cd = constrain_int32(nav_roll_cd, -roll_limit_cd, roll_limit_cd);
+        update_load_factor();
+        float pitch_input = channel_pitch->norm_input();
+        if (pitch_input > 0) {
+            nav_pitch_cd = pitch_input * aparm.pitch_limit_max_cd;
+        } else {
+            nav_pitch_cd = -(pitch_input * pitch_limit_min_cd);
+        }
+        adjust_nav_pitch_throttle();
+        nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
+        if (fly_inverted()) {
+            nav_pitch_cd = -nav_pitch_cd;
+        }
+        if (failsafe.ch3_failsafe && g.short_fs_action == 2) {
+            // FBWA failsafe glide
+            nav_roll_cd = 0;
+            nav_pitch_cd = 0;
+            channel_throttle->servo_out = 0;
+        }
+        if (g.fbwa_tdrag_chan > 0) {
+            // check for the user enabling FBWA taildrag takeoff mode
+            bool tdrag_mode = (hal.rcin->read(g.fbwa_tdrag_chan-1) > 1700);
+            if (tdrag_mode && !auto_state.fbwa_tdrag_takeoff_mode) {
+                if (auto_state.highest_airspeed < g.takeoff_tdrag_speed1) {
+                    auto_state.fbwa_tdrag_takeoff_mode = true;
+                    gcs_send_text(MAV_SEVERITY_WARNING, "FBWA tdrag mode");
+                }
+            }
+        }
+        break;
+    }
     case FLY_BY_WIRE_B:
         // Thanks to Yury MonZon for the altitude limit code!
         nav_roll_cd = channel_roll->norm_input() * roll_limit_cd;
@@ -783,6 +818,7 @@ void Plane::update_navigation()
     case FLY_BY_WIRE_A:
     case AUTOTUNE:
     case FLY_BY_WIRE_B:
+    case FLY_BY_WIRE_EW:        // EWING gcc told me to do this, how smart!
     case CIRCLE:
     case QSTABILIZE:
     case QHOVER:

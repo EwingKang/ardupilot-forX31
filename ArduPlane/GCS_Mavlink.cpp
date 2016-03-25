@@ -39,6 +39,7 @@ void Plane::send_heartbeat(mavlink_channel_t chan)
     case FLY_BY_WIRE_A:
     case AUTOTUNE:
     case FLY_BY_WIRE_B:
+    case FLY_BY_WIRE_EW:        //EWING smart gcc told me to do so
     case QSTABILIZE:
     case QHOVER:
     case QLOITER:
@@ -176,6 +177,7 @@ void Plane::send_extended_status1(mavlink_channel_t chan)
 
     case STABILIZE:
     case FLY_BY_WIRE_A:
+    case FLY_BY_WIRE_EW:        //EWING
     case AUTOTUNE:
     case QSTABILIZE:
     case QHOVER:

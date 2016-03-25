@@ -267,10 +267,16 @@ public:
     // return a ground velocity in meters/second, North/East/Down
     // order. This will only be accurate if have_inertial_nav() is
     // true
+    // EWING I can use this
     virtual bool get_velocity_NED(Vector3f &vec) const {
         return false;
     }
 
+    // EWING calculate the attitude using above function
+    virtual bool get_vel_NED_attitude(Quaternion &qut) const {
+        return false;
+    }
+    
     // returns the expected NED magnetic field
     virtual bool get_expected_mag_field_NED(Vector3f &ret) const {
         return false;

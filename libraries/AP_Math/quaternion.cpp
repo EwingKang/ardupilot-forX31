@@ -247,6 +247,28 @@ Vector3f Quaternion::to_vector312(void) const
     return m.to_euler312();
 }
 
+// EWING my 132, roll, yaw, pitch conversion
+// This is body 1-3-2 rotation according to "spacecraft dynamics",
+// Thomas.R.Kane, P. W. Linkins, and D.A. Levinson
+// the quaternion is defined in eq(15) "EularAngles, Quaternions, and 
+// Trasnformation Matrices", NASA 1977
+bool Quaternion::to_vector132(Vector3f &vec) const
+{
+    float sin_psi = -2*( q2*q3 - q1*q4 );
+    if(sin_psi > 1) {
+        return false;
+    }
+    float cos_psi = sqrtf(1-sq(sin_psi));
+    float sin_the = 2*( q2*q4 + q1*q3) / cos_psi;       // pitch s3 = s3c2/c2
+    float sin_phi = 2*( q3*q4 + q1*q2) / cos_psi;       // roll s1 = s1*c2/sq(1-s2^2);
+    
+    if( (sin_the<-1)||(sin_the>1)||(sin_phi<-1)||(sin_phi>1) ) {
+        return false;
+    }
+    vec = Vector3f(asinf(sin_phi), asinf(sin_the), asinf(sin_psi));
+    return true;
+}
+
 float Quaternion::length(void) const
 {
     return sqrtf(sq(q1) + sq(q2) + sq(q3) + sq(q4));

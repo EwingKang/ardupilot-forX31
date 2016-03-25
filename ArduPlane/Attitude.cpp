@@ -106,6 +106,7 @@ void Plane::stabilize_pitch(float speed_scaler)
     if (control_mode == STABILIZE && channel_pitch->control_in != 0) {
         disable_integrator = true;
     }
+
     channel_pitch->servo_out = pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor, 
                                                              speed_scaler, 
                                                              disable_integrator);
@@ -349,8 +350,31 @@ void Plane::stabilize_acro(float speed_scaler)
     steering_control.steering = steering_control.rudder = rudder_input;
 }
 
+// EWING my control mode
+void Plane::fly_by_wire_ewing(float speed_scaler)
+{
+    Quaternion attQuat, velQuat, errQuat;
+    ahrs.get_NavEKF2_const().getQuaternion(attQuat);
+    bool vel_available = ahrs.get_vel_NED_attitude(velQuat);
+    /* This is right hand rotation systme (I hope) means that if a is 
+       rotated b and become c, then it would be written as c = a*b. 
+       Which is different than my normal happits. */
+    errQuat = velQuat.inverse() * attQuat;  // qb = qv*qvberr
+    Vector3f eular132;      //[MU, AOA, SS]
+    if(errQuat.to_vector132(eular132) && vel_available)  {
+        // do my alpha controller here~
+        channel_roll->servo_out = rollController.get_rate_out(0,  speed_scaler);
+        channel_pitch->servo_out = pitchController.get_servo_out(0, speed_scaler, false);
+    }else {
+        // fail to activate my controller
+        // falls back to FBWA maybe?
+    }    
+    
+}
+
 /*
   main stabilization function for all 3 axes
+  EWING stabilize controller
  */
 void Plane::stabilize()
 {
@@ -364,6 +388,8 @@ void Plane::stabilize()
         stabilize_training(speed_scaler);
     } else if (control_mode == ACRO) {
         stabilize_acro(speed_scaler);
+    } else if (control_mode == FLY_BY_WIRE_EW) {    //EWING jump to my personal controller
+        fly_by_wire_ewing(speed_scaler);
     } else if (control_mode == QSTABILIZE ||
                control_mode == QHOVER ||
                control_mode == QLOITER ||
@@ -373,7 +399,7 @@ void Plane::stabilize()
         if (g.stick_mixing == STICK_MIXING_FBW && control_mode != STABILIZE) {
             stabilize_stick_mixing_fbw();
         }
-        stabilize_roll(speed_scaler);
+        stabilize_roll(speed_scaler);       //EWING stabilize call
         stabilize_pitch(speed_scaler);
         if (g.stick_mixing == STICK_MIXING_DIRECT || control_mode == STABILIZE) {
             stabilize_stick_mixing_direct();

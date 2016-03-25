@@ -92,6 +92,9 @@ public:
 
     // create eulers from a quaternion
     Vector3f    to_vector312(void) const;
+    
+    // EWING my 132 conversion
+    bool to_vector132(Vector3f &vec) const;
 
     float length(void) const;
     void normalize();

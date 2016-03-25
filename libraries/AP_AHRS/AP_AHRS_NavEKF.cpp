@@ -184,7 +184,7 @@ void AP_AHRS_NavEKF::update_EKF2(void)
             ekf2_started = EKF2.InitialiseFilter();
         }
     }
-    if (ekf2_started) {
+    if (ekf2_started) {             //EWING add get quaternion here
         EKF2.UpdateFilter();
         if (active_EKF_type() == EKF_TYPE2) {
             Vector3f eulers;
@@ -513,6 +513,21 @@ bool AP_AHRS_NavEKF::get_velocity_NED(Vector3f &vec) const
     }
 #endif
     }
+}
+
+// EWING retrun the quaternion that rotates from earth NED 
+// to velocity vector
+bool AP_AHRS_NavEKF::get_vel_NED_attitude(Quaternion &quat) const
+{
+    Vector3f vel;
+    
+    if(!get_velocity_NED(vel)) {
+        return false;
+    }
+    float psi = atan2f(vel.y, vel.x);       //yaw angle
+    float theta = atan2f(-vel.z, Vector2f(vel.x, vel.y).length());  // pitch angle
+    quat.from_euler(0, theta, psi);
+    return true;
 }
 
 // returns the expected NED magnetic field
