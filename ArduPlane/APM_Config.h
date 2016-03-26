@@ -8,3 +8,7 @@
 // longer valid! You should switch to using CONFIG_HAL_BOARD via the HAL_BOARD
 // flag in your local config.mk instead.
 
+//////////////////////////////////////////////////////////////////////////////
+#define     ROLL_MAX_CD_EW      60
+#define     AOA_MAX_CD_EW       70*100    
+#define     AOA_MIN_CD_EW       -20*100

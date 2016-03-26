@@ -333,9 +333,19 @@ public:
         k_param_pidNavPitchAltitude, // unused
         k_param_pidWheelSteer, // unused
 
+        
+        //
+        // 248: EWING 
+        k_param_roll_limit_cd_ew = 248,
+        k_param_alpha_limit_max_cd_ew,
+        k_param_alpha_limit_min_cd_ew,
+        
         k_param_DataFlash = 253, // Logging Group
-
+        
         // 254,255: reserved
+        k_param_test1,
+        k_param_test2,
+        k_param_test3,
     };
 
     AP_Int16 format_version;
@@ -510,6 +520,14 @@ public:
 #endif
     AP_Int16 gcs_pid_mask;
     AP_Int8 parachute_channel;
+    
+    // EWING my parameter
+    AP_Int16 roll_limit_cd_ew;
+    AP_Int16 alpha_limit_max_cd_ew;
+    AP_Int16 alpha_limit_min_cd_ew;
+    AP_Int16 test1;
+    AP_Int16 test2;
+    AP_Int16 test3;
 
     // RC channels
     RC_Channel rc_1;

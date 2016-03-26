@@ -168,7 +168,10 @@ void Plane::ahrs_update()
     // calculate a scaled roll limit based on current pitch
     roll_limit_cd = g.roll_limit_cd * cosf(ahrs.pitch);
     pitch_limit_min_cd = aparm.pitch_limit_min_cd * fabsf(cosf(ahrs.roll));
-
+    // EWING do I have to do this here?
+    roll_limit_cd_ew = g.roll_limit_cd_ew * cosf(ahrs.pitch);
+    
+    
     // updated the summed gyro used for ground steering and
     // auto-takeoff. Dot product of DCM.c with gyro vector gives earth
     // frame yaw rate
@@ -650,35 +653,24 @@ void Plane::update_flight_mode(void)
     //EWING my mode
     case FLY_BY_WIRE_EW: {
         // set nav_roll and nav_pitch using sticks
-        nav_roll_cd  = channel_roll->norm_input() * roll_limit_cd;
-        nav_roll_cd = constrain_int32(nav_roll_cd, -roll_limit_cd, roll_limit_cd);
+        ew_MU_cd  = channel_roll->norm_input() * roll_limit_cd_ew;
+        ew_MU_cd = constrain_int32(ew_MU_cd, -roll_limit_cd_ew, roll_limit_cd_ew);
         update_load_factor();
         float pitch_input = channel_pitch->norm_input();
         if (pitch_input > 0) {
-            nav_pitch_cd = pitch_input * aparm.pitch_limit_max_cd;
+            ew_AOA_cd = pitch_input * g.alpha_limit_max_cd_ew;
         } else {
-            nav_pitch_cd = -(pitch_input * pitch_limit_min_cd);
+            ew_AOA_cd = -(pitch_input * g.alpha_limit_min_cd_ew);
         }
-        adjust_nav_pitch_throttle();
-        nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
+        ew_AOA_cd = constrain_int32(ew_AOA_cd, g.alpha_limit_min_cd_ew, g.alpha_limit_max_cd_ew);
         if (fly_inverted()) {
-            nav_pitch_cd = -nav_pitch_cd;
+            ew_AOA_cd = -ew_AOA_cd;
         }
         if (failsafe.ch3_failsafe && g.short_fs_action == 2) {
             // FBWA failsafe glide
-            nav_roll_cd = 0;
-            nav_pitch_cd = 0;
+            ew_MU_cd = 0;
+            ew_AOA_cd = 0;
             channel_throttle->servo_out = 0;
-        }
-        if (g.fbwa_tdrag_chan > 0) {
-            // check for the user enabling FBWA taildrag takeoff mode
-            bool tdrag_mode = (hal.rcin->read(g.fbwa_tdrag_chan-1) > 1700);
-            if (tdrag_mode && !auto_state.fbwa_tdrag_takeoff_mode) {
-                if (auto_state.highest_airspeed < g.takeoff_tdrag_speed1) {
-                    auto_state.fbwa_tdrag_takeoff_mode = true;
-                    gcs_send_text(MAV_SEVERITY_WARNING, "FBWA tdrag mode");
-                }
-            }
         }
         break;
     }

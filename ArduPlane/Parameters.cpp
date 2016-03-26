@@ -746,6 +746,58 @@ const AP_Param::Info Plane::var_info[] = {
     // @Increment: 1
     // @User: Standard
     GSCALAR(acro_pitch_rate,          "ACRO_PITCH_RATE",  180),
+    
+    // @Param: LIM_ROLL_CD_EW
+    // @DisplayName: EWING mode Roll limit
+    // @Description: The maximum roll angle deflection in EWING mode
+    // @Units: centi-Degrees
+    // @Range: 1000 9000
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(roll_limit_cd_ew,         "LIM_ROLL_CD_EW",    ROLL_MAX_CD_EW),
+    
+    // @Param: AOA_MAX_CD_EW
+    // @DisplayName: EWING mode AOA MAX
+    // @Description: The maximum AOA in EWING mode
+    // @Units: centi-Degrees
+    // @Range: 1000 9000
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(alpha_limit_max_cd_ew,    "LIM_AOA_MAX_EW",    AOA_MAX_CD_EW),
+    
+    // @Param: AOA_MIN_CD_EW
+    // @DisplayName: EWING mode AOA MIN
+    // @Description: The minimum AOA in EWING mode
+    // @Units: centi-Degrees
+    // @Range: 0 -8000
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(alpha_limit_min_cd_ew,    "LIM_AOA_MIN_EW",    AOA_MIN_CD_EW),
+    
+    // @Param: Test1
+    // @DisplayName: EWING test1
+    // @Description: test1
+    // @Units: centi-Degrees
+    // @Range: 0 -8000
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(test1,    "TEST1",    0),
+    // @Param: Test2
+    // @DisplayName: EWING test1
+    // @Description: test1
+    // @Units: centi-Degrees
+    // @Range: 0 -8000
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(test2,    "TEST2",    0),
+    // @Param: Test3
+    // @DisplayName: EWING test1
+    // @Description: test1
+    // @Units: centi-Degrees
+    // @Range: 0 -8000
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(test3,    "TEST3",    0),
 
     // @Param: ACRO_LOCKING
     // @DisplayName: ACRO mode attitude locking

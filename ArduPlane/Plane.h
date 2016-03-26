@@ -549,6 +549,15 @@ private:
 
     // The instantaneous desired pitch angle.  Hundredths of a degree
     int32_t nav_pitch_cd;
+    
+    // EWING my maximum bank angle. Hundredths of a degree
+    int32_t roll_limit_cd_ew;
+    
+    // EWING my desired Angle Of Attack. Hundredths of a degree
+    int32_t ew_AOA_cd;
+    
+    // EWING my desired Aerodynamic rolling. Hundredths of a degree
+    int32_t ew_MU_cd;
 
     // we separate out rudder input to allow for RUDDER_ONLY=1
     int16_t rudder_input;
