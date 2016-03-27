@@ -756,48 +756,68 @@ const AP_Param::Info Plane::var_info[] = {
     // @User: Standard
     GSCALAR(roll_limit_cd_ew,         "LIM_ROLL_CD_EW",    ROLL_MAX_CD_EW),
     
-    // @Param: AOA_MAX_CD_EW
+    // @Param: MAX_AOA_IN_CD_EW
     // @DisplayName: EWING mode AOA MAX
     // @Description: The maximum AOA in EWING mode
-    // @Units: centi-Degrees
+    // @Units: Degrees
     // @Range: 1000 9000
     // @Increment: 1
     // @User: Standard
-    GSCALAR(alpha_limit_max_cd_ew,    "LIM_AOA_MAX_EW",    AOA_MAX_CD_EW),
+    GSCALAR(max_aoa_in_cd_ew,    "MAX_AOA_IN_CD_EW",    MAX_AOA_IN_CD_EW),
     
-    // @Param: AOA_MIN_CD_EW
+    // @Param: MIN_AOA_IN_CD_EW
     // @DisplayName: EWING mode AOA MIN
     // @Description: The minimum AOA in EWING mode
     // @Units: centi-Degrees
     // @Range: 0 -8000
     // @Increment: 1
     // @User: Standard
-    GSCALAR(alpha_limit_min_cd_ew,    "LIM_AOA_MIN_EW",    AOA_MIN_CD_EW),
+    GSCALAR(min_aoa_in_cd_ew,    "MIN_AOA_IN_CD_EW",    MIN_AOA_IN_CD_EW),
     
-    // @Param: Test1
-    // @DisplayName: EWING test1
-    // @Description: test1
-    // @Units: centi-Degrees
-    // @Range: 0 -8000
+    // @Param: AOA_CMPNSTR_ENBL_EW
+    // @DisplayName: EWING mode AOA compensator
+    // @Description: This  minimum AOA in EWING mode
+    // @Units:
+    // @Range: 0 5
     // @Increment: 1
     // @User: Standard
-    GSCALAR(test1,    "TEST1",    0),
-    // @Param: Test2
-    // @DisplayName: EWING test1
-    // @Description: test1
-    // @Units: centi-Degrees
-    // @Range: 0 -8000
+    GSCALAR(enable_aoa_cmpnstr_ew,    "AOA_CMPNSTR_ENBL_EW",    AOA_CMPNSTR_ENBL_EW),
+    
+    // @Param: MAX_CNRD_AOA_EW
+    // @DisplayName: EWING canard max AOA output
+    // @Description: This is the angle that scales the output angle of canard
+    // @Units:
+    // @Range: 0 5
     // @Increment: 1
     // @User: Standard
-    GSCALAR(test2,    "TEST2",    0),
-    // @Param: Test3
-    // @DisplayName: EWING test1
-    // @Description: test1
-    // @Units: centi-Degrees
-    // @Range: 0 -8000
+    GSCALAR(max_canard_aoa_ew,    "MAX_CNRD_AOA_EW",    MAX_CNRD_AOA_EW),
+    
+    // @Param: MIN_CNRD_AOA_EW
+    // @DisplayName: EWING canard max AOA output
+    // @Description: This is the angle that scales the output angle of canard
+    // @Units:
+    // @Range: 0 5
     // @Increment: 1
     // @User: Standard
-    GSCALAR(test3,    "TEST3",    0),
+    GSCALAR(min_canard_aoa_ew,    "MIN_CNRD_AOA_EW",    MIN_CNRD_AOA_EW),
+    
+    // @Param: K_AOA_TO_RATE_EW
+    // @DisplayName: EWING AOA to rate gain
+    // @Description: The linear gain of AOA c-Degree error to c-Degree pitch rate gain
+    // @Units: cD / (cD/s)
+    // @Range: -1000 1000
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(k_aoa_to_rate_ew,    "K_AOA_TO_RATE_EW",    K_AOA_TO_RATE_EW),
+    
+    // @Param: K_MU_TO_RATE_EW
+    // @DisplayName: EWING MU to rate gain
+    // @Description: The linear gain of MU c-Degree error to c-Degree roll rate gain
+    // @Units: cD / (cD/s)
+    // @Range: -1000 1000
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(k_mu_to_rate_ew,    "K_MU_TO_RATE_EW",    K_MU_TO_RATE_EW),
 
     // @Param: ACRO_LOCKING
     // @DisplayName: ACRO mode attitude locking

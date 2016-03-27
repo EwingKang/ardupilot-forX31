@@ -558,6 +558,12 @@ private:
     
     // EWING my desired Aerodynamic rolling. Hundredths of a degree
     int32_t ew_MU_cd;
+    
+    // EWING my controller variables
+    Quaternion attQuat, velQuat, errQuat;
+    bool vel_available, aero_available;
+    
+    Vector3f eular132;      //[MU, AOA, SS]
 
     // we separate out rudder input to allow for RUDDER_ONLY=1
     int16_t rudder_input;

@@ -337,15 +337,18 @@ public:
         //
         // 248: EWING 
         k_param_roll_limit_cd_ew = 248,
-        k_param_alpha_limit_max_cd_ew,
-        k_param_alpha_limit_min_cd_ew,
+        k_param_max_aoa_in_cd_ew,
+        k_param_min_aoa_in_cd_ew,
+        k_param_enable_aoa_cmpnstr_ew,
+        
         
         k_param_DataFlash = 253, // Logging Group
         
         // 254,255: reserved
-        k_param_test1,
-        k_param_test2,
-        k_param_test3,
+        k_param_max_canard_aoa_ew,
+        k_param_min_canard_aoa_ew,
+        k_param_k_aoa_to_rate_ew,
+        k_param_k_mu_to_rate_ew
     };
 
     AP_Int16 format_version;
@@ -523,11 +526,13 @@ public:
     
     // EWING my parameter
     AP_Int16 roll_limit_cd_ew;
-    AP_Int16 alpha_limit_max_cd_ew;
-    AP_Int16 alpha_limit_min_cd_ew;
-    AP_Int16 test1;
-    AP_Int16 test2;
-    AP_Int16 test3;
+    AP_Int16 max_aoa_in_cd_ew;
+    AP_Int16 min_aoa_in_cd_ew;
+    AP_Int8 enable_aoa_cmpnstr_ew;
+    AP_Int8 max_canard_aoa_ew;
+    AP_Int8 min_canard_aoa_ew;
+    AP_Float k_aoa_to_rate_ew;
+    AP_Float k_mu_to_rate_ew;
 
     // RC channels
     RC_Channel rc_1;

@@ -18,7 +18,7 @@ public:
 		AP_Param::setup_object_defaults(this, var_info);
 	}
 
-	int32_t get_rate_out(float desired_rate, float scaler);
+	int32_t get_rate_out(float desired_rate, float scaler);         // EWING I'll use this
 	int32_t get_servo_out(int32_t angle_err, float scaler, bool disable_integrator);
 
 	void reset_I();

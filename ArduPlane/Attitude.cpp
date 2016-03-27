@@ -353,23 +353,62 @@ void Plane::stabilize_acro(float speed_scaler)
 // EWING my control mode
 void Plane::fly_by_wire_ewing(float speed_scaler)
 {
-    Quaternion attQuat, velQuat, errQuat;
-    ahrs.get_NavEKF2_const().getQuaternion(attQuat);
-    bool vel_available = ahrs.get_vel_NED_attitude(velQuat);
-    /* This is right hand rotation systme (I hope) means that if a is 
-       rotated b and become c, then it would be written as c = a*b. 
-       Which is different than my normal happits. */
-    errQuat = velQuat.inverse() * attQuat;  // qb = qv*qvberr
-    Vector3f eular132;      //[MU, AOA, SS]
-    if(errQuat.to_vector132(eular132) && vel_available)  {
+    if ((aero_available)&&(vel_available)){
+    // avaliable: eular132        
         // do my alpha controller here~
-        channel_roll->servo_out = rollController.get_rate_out(0,  speed_scaler);
-        channel_pitch->servo_out = pitchController.get_servo_out(0, speed_scaler, false);
+        float ahrs_aoa_cd, aoa_err, ahrs_mu_cd, mu_err;
+        float svo_aileron, svo_canard;
+        ahrs_aoa_cd = ToDeg(eular132.y);
+        ahrs_mu_cd = ToDeg(eular132.x);
+        aoa_err = ew_AOA_cd - ahrs_aoa_cd;
+        mu_err = ew_MU_cd - ahrs_mu_cd;
+        
+        svo_aileron = rollController.get_rate_out(mu_err * g.k_aoa_to_rate_ew,  speed_scaler);    // +-4500
+        svo_canard = pitchController.get_rate_out(aoa_err * g.k_mu_to_rate_ew, speed_scaler);
+        
+        // if using unstable canard, the canard always point toward the wind
+        if(g.enable_aoa_cmpnstr_ew) {
+            float aoa_conversion;
+            if(ew_AOA_cd > 0) {
+                aoa_conversion = ew_AOA_cd * (g.max_canard_aoa_ew*100.0f/4500);
+            }else {
+                aoa_conversion = -ew_AOA_cd * (g.min_canard_aoa_ew*100.0f/4500);
+            }
+            svo_canard -= aoa_conversion;   // higher AOA, lower the angle is.
+        }
+        
+        // low speed compensation, in case the AOA estimator is not so accurate
+        Vector3f vel;
+        if (ahrs.get_velocity_NED(vel)) {    // do speed mixing with
+            if( vel.length() < 5 ) {
+                int32_t demanded_pitch = nav_pitch_cd + g.pitch_trim_cd + channel_throttle->servo_out * g.kff_throttle_to_pitch;
+                svo_canard = pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor, speed_scaler,  false);
+            }else if(vel.length() < 13) {
+                int32_t demanded_pitch = nav_pitch_cd + g.pitch_trim_cd + channel_throttle->servo_out * g.kff_throttle_to_pitch;
+                float att_command;
+                att_command = pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor, speed_scaler,  false);
+                // linear scaling;
+                svo_canard = (svo_canard* (vel.length()-5)/ (13-5)) + (att_command* (13-vel.length())/ (13-5));
+            }
+        }
+        
+        channel_roll->servo_out = svo_aileron;
+        channel_pitch->servo_out = constrain_float(svo_canard, -4500, 4500);
+        stabilize_yaw(speed_scaler);
+        return;
     }else {
-        // fail to activate my controller
-        // falls back to FBWA maybe?
-    }    
-    
+        // fail to activate my controller, fall back to FBWA calling method
+
+        if (g.stick_mixing == STICK_MIXING_FBW && control_mode != STABILIZE) {
+            stabilize_stick_mixing_fbw();
+        }
+        stabilize_roll(speed_scaler);       //EWING stabilize call
+        stabilize_pitch(speed_scaler);
+        if (g.stick_mixing == STICK_MIXING_DIRECT || control_mode == STABILIZE) {
+            stabilize_stick_mixing_direct();
+        }
+        stabilize_yaw(speed_scaler);
+    }
 }
 
 /*

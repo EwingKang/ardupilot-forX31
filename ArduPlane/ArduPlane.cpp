@@ -168,8 +168,18 @@ void Plane::ahrs_update()
     // calculate a scaled roll limit based on current pitch
     roll_limit_cd = g.roll_limit_cd * cosf(ahrs.pitch);
     pitch_limit_min_cd = aparm.pitch_limit_min_cd * fabsf(cosf(ahrs.roll));
+    
     // EWING do I have to do this here?
     roll_limit_cd_ew = g.roll_limit_cd_ew * cosf(ahrs.pitch);
+    
+    // EWING my estimator
+    ahrs.get_NavEKF2_const().getQuaternion(attQuat);
+    vel_available = ahrs.get_vel_NED_attitude(velQuat);
+    /* This is right hand rotation systme (I hope) means that if a is 
+       rotated b and become c, then it would be written as c = a*b. 
+       Which is different than my normal happits. */
+    errQuat = velQuat.inverse() * attQuat;  // qb = qv*qvberr
+    aero_available = errQuat.to_vector132(eular132);
     
     
     // updated the summed gyro used for ground steering and
@@ -658,18 +668,18 @@ void Plane::update_flight_mode(void)
         update_load_factor();
         float pitch_input = channel_pitch->norm_input();
         if (pitch_input > 0) {
-            ew_AOA_cd = pitch_input * g.alpha_limit_max_cd_ew;
+            ew_AOA_cd = pitch_input * g.max_aoa_in_cd_ew;
         } else {
-            ew_AOA_cd = -(pitch_input * g.alpha_limit_min_cd_ew);
+            ew_AOA_cd = -(pitch_input * g.min_aoa_in_cd_ew);
         }
-        ew_AOA_cd = constrain_int32(ew_AOA_cd, g.alpha_limit_min_cd_ew, g.alpha_limit_max_cd_ew);
+        ew_AOA_cd = constrain_int32(ew_AOA_cd, g.min_aoa_in_cd_ew, g.max_aoa_in_cd_ew);
         if (fly_inverted()) {
             ew_AOA_cd = -ew_AOA_cd;
         }
         if (failsafe.ch3_failsafe && g.short_fs_action == 2) {
             // FBWA failsafe glide
             ew_MU_cd = 0;
-            ew_AOA_cd = 0;
+            ew_AOA_cd = 500;
             channel_throttle->servo_out = 0;
         }
         break;
