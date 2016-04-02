@@ -353,13 +353,14 @@ void Plane::stabilize_acro(float speed_scaler)
 // EWING my control mode
 void Plane::fly_by_wire_ewing(float speed_scaler)
 {
+    float Vspeed;
     if ((aero_available)&&(vel_available)){
-    // avaliable: eular132        
+        // avaliable: eular132        
         // do my alpha controller here~
         float ahrs_aoa_cd, aoa_err, ahrs_mu_cd, mu_err;
         float svo_aileron, svo_canard;
-        ahrs_aoa_cd = ToDeg(eular132.y);
-        ahrs_mu_cd = ToDeg(eular132.x);
+        ahrs_aoa_cd = ToDeg(eular132.y)*100;
+        ahrs_mu_cd = ToDeg(eular132.x)*100;
         aoa_err = ew_AOA_cd - ahrs_aoa_cd;
         mu_err = ew_MU_cd - ahrs_mu_cd;
         
@@ -380,15 +381,21 @@ void Plane::fly_by_wire_ewing(float speed_scaler)
         // low speed compensation, in case the AOA estimator is not so accurate
         Vector3f vel;
         if (ahrs.get_velocity_NED(vel)) {    // do speed mixing with
-            if( vel.length() < 5 ) {
+            Vspeed = vel.length();
+            if( Vspeed < 5 ) {
+                
+                svo_canard = pitchController.get_servo_out(nav_pitch_cd + g.pitch_trim_cd + channel_throttle->servo_out * g.kff_throttle_to_pitch - ahrs.pitch_sensor, 
+                                                            speed_scaler,  false);
+                svo_aileron = rollController.get_servo_out(nav_roll_cd - ahrs.roll_sensor, speed_scaler, false);
+                
+                }else if(Vspeed < 13) {
                 int32_t demanded_pitch = nav_pitch_cd + g.pitch_trim_cd + channel_throttle->servo_out * g.kff_throttle_to_pitch;
-                svo_canard = pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor, speed_scaler,  false);
-            }else if(vel.length() < 13) {
-                int32_t demanded_pitch = nav_pitch_cd + g.pitch_trim_cd + channel_throttle->servo_out * g.kff_throttle_to_pitch;
-                float att_command;
-                att_command = pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor, speed_scaler,  false);
+                float pitch_command, roll_command;
+                pitch_command = pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor, speed_scaler,  false);
+                roll_command = rollController.get_servo_out(nav_roll_cd - ahrs.roll_sensor, speed_scaler, false);                
                 // linear scaling;
-                svo_canard = (svo_canard* (vel.length()-5)/ (13-5)) + (att_command* (13-vel.length())/ (13-5));
+                svo_canard = (svo_canard* (Vspeed-5)/ (13-5)) + (pitch_command* (13-Vspeed)/ (13-5));
+                svo_aileron = (svo_aileron* (Vspeed-5)/ (13-5)) + (roll_command* (13-Vspeed)/ (13-5));
             }
         }
         
@@ -409,6 +416,7 @@ void Plane::fly_by_wire_ewing(float speed_scaler)
         }
         stabilize_yaw(speed_scaler);
     }
+    Log_Write_EWAero(Vspeed);
 }
 
 /*

@@ -175,11 +175,19 @@ void Plane::ahrs_update()
     // EWING my estimator
     ahrs.get_NavEKF2_const().getQuaternion(attQuat);
     vel_available = ahrs.get_vel_NED_attitude(velQuat);
-    /* This is right hand rotation systme (I hope) means that if a is 
-       rotated b and become c, then it would be written as c = a*b. 
-       Which is different than my normal happits. */
-    errQuat = velQuat.inverse() * attQuat;  // qb = qv*qvberr
-    aero_available = errQuat.to_vector132(eular132);
+    if(vel_available) {
+        /* This is right hand rotation systme (I hope) means that if a is 
+           rotated b and become c, then it would be written as c = a*b. 
+           Which is different than my normal happits. */
+        errQuat = velQuat.inverse() * attQuat;  // qb = qv*qvberr
+        aero_available = errQuat.to_vector132(eular132);
+    } else {
+        errQuat.initialise();
+        velQuat.initialise();
+        eular132.zero();
+        aero_available = false;
+    }
+    Log_Write_EWQuat();
     
     
     // updated the summed gyro used for ground steering and
@@ -679,7 +687,7 @@ void Plane::update_flight_mode(void)
         if (failsafe.ch3_failsafe && g.short_fs_action == 2) {
             // FBWA failsafe glide
             ew_MU_cd = 0;
-            ew_AOA_cd = 500;
+            ew_AOA_cd = 500;        // 5 degree
             channel_throttle->servo_out = 0;
         }
         break;

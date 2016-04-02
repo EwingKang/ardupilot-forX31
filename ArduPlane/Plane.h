@@ -793,6 +793,8 @@ private:
     void Log_Write_Airspeed(void);
     void Log_Write_Home_And_Origin();
     void Log_Write_Vehicle_Startup_Messages();
+    void Log_Write_EWQuat(void);                //Ewing Quaternion log
+    void Log_Write_EWAero(const float &Vspeed); //EWING Aero log
     void Log_Read(uint16_t log_num, int16_t start_page, int16_t end_page);
     void start_logging();
 

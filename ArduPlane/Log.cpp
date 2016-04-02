@@ -377,6 +377,66 @@ void Plane::Log_Write_Sonar()
 #endif
 }
 
+// EWING my quaternion logger
+struct PACKED log_ewing_quat {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    bool haveVel;
+    float vel_Q0;
+    float vel_Q1;
+    float vel_Q2;
+    float vel_Q3;
+    float VToB_Q0;
+    float VToB_Q1;
+    float VToB_Q2;
+    float VToB_Q3;
+};
+
+void Plane::Log_Write_EWQuat()
+{
+    struct log_ewing_quat pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_EWQ_MSG)
+        ,time_us    : AP_HAL::micros64()
+        ,haveVel    : vel_available
+        ,vel_Q0     : velQuat.q1
+        ,vel_Q1     : velQuat.q2
+        ,vel_Q2     : velQuat.q3
+        ,vel_Q3     : velQuat.q4
+        ,VToB_Q0    : errQuat.q1
+        ,VToB_Q1    : errQuat.q2
+        ,VToB_Q2    : errQuat.q3
+        ,VToB_Q3    : errQuat.q4
+        };
+
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
+// EWING my aerodynamic relation logger
+struct PACKED log_ewing_aero {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    bool aero_avail;
+    float freestream_vel;
+    float angle_of_attack;
+    float angle_of_sideslip;
+    float aero_roll;
+};
+
+void Plane::Log_Write_EWAero(const float &Vspeed)
+{
+    struct log_ewing_aero pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_EWA_MSG)
+        ,time_us            : AP_HAL::micros64()
+        ,aero_avail         : aero_available
+        ,freestream_vel     : Vspeed
+        ,angle_of_attack    : ToDeg(eular132.y)
+        ,angle_of_sideslip  : ToDeg(eular132.z)
+        ,aero_roll          : ToDeg(eular132.x)
+        };
+
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
 struct PACKED log_Optflow {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -502,6 +562,10 @@ static const struct LogStructure log_structure[] = {
       "STAT", "QBfBBBBBB",  "TimeUS,isFlying,isFlyProb,Armed,Safety,Crash,Still,Stage,Hit" },
     { LOG_QTUN_MSG, sizeof(QuadPlane::log_QControl_Tuning),
       "QTUN", "Qhfffehh", "TimeUS,AngBst,ThrOut,DAlt,Alt,BarAlt,DCRt,CRt" },
+    { LOG_EWQ_MSG, sizeof(log_ewing_quat),      
+      "EWQ", "QBffffffff", "TimeUS,haveV,vQ0,vQ1,vQ2,vQ3,VtoBQ0,VtoBQ1,VtoBQ2,VtoBQ3" },// EWING quaternion logging
+    { LOG_EWA_MSG, sizeof(log_ewing_aero),      
+      "EWA", "QBffff", "TimeUS,haveAero,aeroVel,AOA,SS,MU" },  // EWING aero logging 
 #if OPTFLOW == ENABLED
     { LOG_OPTFLOW_MSG, sizeof(log_Optflow),
       "OF",   "QBffff",   "TimeUS,Qual,flowX,flowY,bodyX,bodyY" },
