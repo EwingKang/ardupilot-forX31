@@ -18,3 +18,5 @@
 #define     K_AOA_TO_RATE_EW    2
 #define     K_MU_TO_RATE_EW     1.5
 #define     AOA_TRIM_CD_EW      800
+#define     CTRL_TRANS_UB_EW    13
+#define     CTRL_TRANS_LB_EW    5

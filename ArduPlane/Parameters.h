@@ -351,7 +351,9 @@ public:
         k_param_min_canard_aoa_ew,
         k_param_k_aoa_to_rate_ew,
         k_param_k_mu_to_rate_ew, 
-        k_param_aoa_trim_cd_ew
+        k_param_aoa_trim_cd_ew,
+        k_param_ctrl_trans_ub_ew,
+        k_param_ctrl_trans_lb_ew
     };
 
     AP_Int16 format_version;
@@ -537,6 +539,8 @@ public:
     AP_Float k_aoa_to_rate_ew;
     AP_Float k_mu_to_rate_ew;
     AP_Int16 aoa_trim_cd_ew;
+    AP_Float ctrl_trans_ub_ew;
+    AP_Float ctrl_trans_lb_ew;
 
     // RC channels
     RC_Channel rc_1;

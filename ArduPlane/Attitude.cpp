@@ -382,11 +382,12 @@ void Plane::fly_by_wire_ewing(float speed_scaler)
         // low speed compensation, in case the AOA estimator is not so accurate,
         // we need to do low speed controller mixing. Which is borrow from FBWA
         Vspeed = vel_NED.length();
-        if( Vspeed < 5 ) {  
+        float ctrl_trans_intvl = (g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew);
+        if( Vspeed < g.ctrl_trans_lb_ew ) {  
             svo_canard = pitchController.get_servo_out(ew_AOA_cd + g.pitch_trim_cd + channel_throttle->servo_out * g.kff_throttle_to_pitch - ahrs.pitch_sensor, 
                                                         speed_scaler,  false);
             svo_aileron = rollController.get_servo_out(ew_MU_cd - ahrs.roll_sensor, speed_scaler, false);
-        } else if(Vspeed <= 13) {
+        } else if(Vspeed <= g.ctrl_trans_ub_ew) {
             int32_t demanded_pitch = ew_AOA_cd + g.pitch_trim_cd + channel_throttle->servo_out * g.kff_throttle_to_pitch;
             float pitch_command, roll_command;
             // normal FBWA command output
@@ -395,10 +396,10 @@ void Plane::fly_by_wire_ewing(float speed_scaler)
             
             // linear scaling with ew_aero controller;
             // when compensating, higher the AOA, lower the angle is.
-            svo_canard = ( (svo_canard-aoa_compensation) * (Vspeed-5)/(13-5) ) + (pitch_command* (13-Vspeed)/ (13-5));
-            svo_aileron = (svo_aileron* (Vspeed-5)/ (13-5)) + (roll_command* (13-Vspeed)/ (13-5));
+            svo_canard = ( (svo_canard-aoa_compensation) * (Vspeed-g.ctrl_trans_lb_ew)/ctrl_trans_intvl ) + (pitch_command* (g.ctrl_trans_ub_ew-Vspeed)/ ctrl_trans_intvl);
+            svo_aileron = (svo_aileron* (Vspeed-g.ctrl_trans_lb_ew)/ ctrl_trans_intvl) + (roll_command* (g.ctrl_trans_ub_ew-Vspeed)/ ctrl_trans_intvl);
 
-        } else {       // speed > 13
+        } else {       // speed > g.ctrl_trans_ub_ew
             svo_canard -= aoa_compensation;
         }   // if (speed range)
         

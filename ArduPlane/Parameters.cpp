@@ -828,7 +828,24 @@ const AP_Param::Info Plane::var_info[] = {
     // @User: Standard
     GSCALAR(aoa_trim_cd_ew,    "AOA_TRIM_CD_EW",    AOA_TRIM_CD_EW),
     
-
+    // @Param: CTRL_TRANS_UB_EW
+    // @DisplayName: EWING control transition upper bound
+    // @Description: The speed which controller is fully transition to ew_aero controller
+    // @Units: m/s
+    // @Range: 0 30
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ctrl_trans_ub_ew,    "CTRL_TRANS_UB_EW",    CTRL_TRANS_UB_EW),
+    
+    // @Param: CTRL_TRANS_LB_EW
+    // @DisplayName: EWING control transition lower bound
+    // @Description: The speed which controller start mixing FBWA to ew_aero controller
+    // @Units: m/s
+    // @Range: 0 30
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ctrl_trans_lb_ew,    "CTRL_TRANS_LB_EW",    CTRL_TRANS_LB_EW),
+    
     // @Param: ACRO_LOCKING
     // @DisplayName: ACRO mode attitude locking
     // @Description: Enable attitude locking when sticks are released
