@@ -402,7 +402,6 @@ void Plane::fly_by_wire_ewing(float speed_scaler)
         channel_roll->servo_out = svo_aileron;
         channel_pitch->servo_out = constrain_float(svo_canard, -4500, 4500);
         stabilize_yaw(speed_scaler);
-        return;
     }else {
         // fail to activate my controller, fall back to FBWA calling method
 
@@ -417,6 +416,7 @@ void Plane::fly_by_wire_ewing(float speed_scaler)
         stabilize_yaw(speed_scaler);
     }
     Log_Write_EWAero(Vspeed);
+    return;
 }
 
 /*
