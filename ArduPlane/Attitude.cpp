@@ -364,8 +364,9 @@ void Plane::fly_by_wire_ewing(float speed_scaler)
         aoa_err = ew_AOA_cd + g.aoa_trim_cd_ew - ahrs_aoa_cd;
         mu_err = ew_MU_cd - ahrs_mu_cd;
         
-        svo_aileron = rollController.get_rate_out(mu_err * g.k_aoa_to_rate_ew,  speed_scaler);    // +-4500
-        svo_canard = pitchController.get_rate_out(aoa_err * g.k_mu_to_rate_ew, speed_scaler);
+        // rate controller takes in desired rate in deg/s, and output servo angle of +-4500
+        svo_aileron = rollController.get_rate_out(mu_err * g.k_aoa_to_rate_ew * 0.01f,  speed_scaler);
+        svo_canard = pitchController.get_rate_out(aoa_err * g.k_mu_to_rate_ew * 0.01f, speed_scaler);
         
         // if using unstable canard, the canard always point toward the wind
         // AOA compensation of canard
