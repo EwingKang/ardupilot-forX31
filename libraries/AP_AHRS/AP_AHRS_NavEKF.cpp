@@ -517,15 +517,15 @@ bool AP_AHRS_NavEKF::get_velocity_NED(Vector3f &vec) const
 
 // EWING retrun the quaternion that rotates from earth NED 
 // to velocity vector
-bool AP_AHRS_NavEKF::get_vel_NED_attitude(Quaternion &quat) const
+bool AP_AHRS_NavEKF::get_vel_NED_attitude(Quaternion &quat, Vector3f &vNED) const
 {
-    Vector3f vel;
-    
-    if(!get_velocity_NED(vel)) {
+    if(!get_velocity_NED(vNED)) {
+        vNED.zero();
+        quat.initialise();
         return false;
     }
-    float psi = atan2f(vel.y, vel.x);       //yaw angle
-    float theta = atan2f(-vel.z, Vector2f(vel.x, vel.y).length());  // pitch angle
+    float psi = atan2f(vNED.y, vNED.x);       //yaw angle
+    float theta = atan2f(-vNED.z, Vector2f(vNED.x, vNED.y).length());  // pitch angle
     quat.from_euler(0, theta, psi);
     return true;
 }

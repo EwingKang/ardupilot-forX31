@@ -346,10 +346,12 @@ public:
         k_param_DataFlash = 253, // Logging Group
         
         // 254,255: reserved
+        //EWING continued
         k_param_max_canard_aoa_ew,
         k_param_min_canard_aoa_ew,
         k_param_k_aoa_to_rate_ew,
-        k_param_k_mu_to_rate_ew
+        k_param_k_mu_to_rate_ew, 
+        k_param_aoa_trim_cd_ew
     };
 
     AP_Int16 format_version;
@@ -534,6 +536,7 @@ public:
     AP_Int8 min_canard_aoa_ew;
     AP_Float k_aoa_to_rate_ew;
     AP_Float k_mu_to_rate_ew;
+    AP_Int16 aoa_trim_cd_ew;
 
     // RC channels
     RC_Channel rc_1;

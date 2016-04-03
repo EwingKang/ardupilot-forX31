@@ -818,6 +818,16 @@ const AP_Param::Info Plane::var_info[] = {
     // @Increment: 0.01
     // @User: Standard
     GSCALAR(k_mu_to_rate_ew,    "K_MU_TO_RATE_EW",    K_MU_TO_RATE_EW),
+    
+    // @Param: AOA_TRIM_CD_EW
+    // @DisplayName: EWING nutural stick AOA trim
+    // @Description: The linear gain of MU c-Degree error to c-Degree roll rate gain
+    // @Units: centi-Degree
+    // @Range: -8000 9000
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(aoa_trim_cd_ew,    "AOA_TRIM_CD_EW",    AOA_TRIM_CD_EW),
+    
 
     // @Param: ACRO_LOCKING
     // @DisplayName: ACRO mode attitude locking

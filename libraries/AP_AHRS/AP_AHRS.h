@@ -273,7 +273,9 @@ public:
     }
 
     // EWING calculate the attitude using above function
-    virtual bool get_vel_NED_attitude(Quaternion &qut) const {
+    virtual bool get_vel_NED_attitude(Quaternion &qut, Vector3f &vNED) const {
+        qut.initialise();
+        vNED.zero();
         return false;
     }
     

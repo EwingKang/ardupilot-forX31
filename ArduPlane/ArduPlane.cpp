@@ -174,7 +174,7 @@ void Plane::ahrs_update()
     
     // EWING my estimator
     ahrs.get_NavEKF2_const().getQuaternion(attQuat);
-    vel_available = ahrs.get_vel_NED_attitude(velQuat);
+    vel_available = ahrs.get_vel_NED_attitude(velQuat, vel_NED);
     if(vel_available) {
         /* This is right hand rotation systme (I hope) means that if a is 
            rotated b and become c, then it would be written as c = a*b. 
@@ -673,6 +673,10 @@ void Plane::update_flight_mode(void)
         // set nav_roll and nav_pitch using sticks
         ew_MU_cd  = channel_roll->norm_input() * roll_limit_cd_ew;
         ew_MU_cd = constrain_int32(ew_MU_cd, -roll_limit_cd_ew, roll_limit_cd_ew);
+        // backup FBWA controller when my mode fail
+        nav_roll_cd  = channel_roll->norm_input() * roll_limit_cd;          
+        nav_roll_cd = constrain_int32(nav_roll_cd, -roll_limit_cd, roll_limit_cd);
+        
         update_load_factor();
         float pitch_input = channel_pitch->norm_input();
         if (pitch_input > 0) {
@@ -685,10 +689,12 @@ void Plane::update_flight_mode(void)
             ew_AOA_cd = -ew_AOA_cd;
         }
         if (failsafe.ch3_failsafe && g.short_fs_action == 2) {
-            // FBWA failsafe glide
             ew_MU_cd = 0;
             ew_AOA_cd = 500;        // 5 degree
             channel_throttle->servo_out = 0;
+            // FBWA failsafe
+            nav_roll_cd = 0;
+            nav_pitch_cd = 0;
         }
         break;
     }

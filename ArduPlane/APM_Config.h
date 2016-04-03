@@ -12,8 +12,9 @@
 #define     ROLL_MAX_CD_EW      60*100
 #define     MAX_AOA_IN_CD_EW    70*100    
 #define     MIN_AOA_IN_CD_EW    -20*100
-#define     AOA_CMPNSTR_ENBL_EW    0
+#define     AOA_CMPNSTR_ENBL_EW 0
 #define     MAX_CNRD_AOA_EW     80
 #define     MIN_CNRD_AOA_EW     -15
 #define     K_AOA_TO_RATE_EW    2
 #define     K_MU_TO_RATE_EW     1.5
+#define     AOA_TRIM_CD_EW      800

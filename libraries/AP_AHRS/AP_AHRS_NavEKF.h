@@ -127,7 +127,7 @@ public:
     bool have_inertial_nav(void) const;
 
     bool get_velocity_NED(Vector3f &vec) const;
-    bool get_vel_NED_attitude(Quaternion &qut) const;     // EWING inherent from AP_AHRS
+    bool get_vel_NED_attitude(Quaternion &qut, Vector3f &vNED) const;     // EWING inherent from AP_AHRS
     bool get_relative_position_NED(Vector3f &vec) const;
 
     // Get a derivative of the vertical position in m/s which is kinematically consistent with the vertical position is required by some control loops.

@@ -562,6 +562,7 @@ private:
     // EWING my controller variables
     Quaternion attQuat, velQuat, errQuat;
     bool vel_available, aero_available;
+    Vector3f vel_NED;
     
     Vector3f eular132;      //[MU, AOA, SS]
 
