@@ -156,15 +156,6 @@ void Plane::ahrs_update()
 
     ahrs.update();
 
-    if (should_log(MASK_LOG_ATTITUDE_FAST)) {
-        Log_Write_Attitude();
-    }
-
-    if (should_log(MASK_LOG_IMU)) {
-        Log_Write_IMU();
-        DataFlash.Log_Write_IMUDT(ins);
-    }
-
     // calculate a scaled roll limit based on current pitch
     roll_limit_cd = g.roll_limit_cd * cosf(ahrs.pitch);
     pitch_limit_min_cd = aparm.pitch_limit_min_cd * fabsf(cosf(ahrs.roll));
@@ -187,7 +178,16 @@ void Plane::ahrs_update()
         eular132.zero();
         aero_available = false;
     }
-    Log_Write_EWQuat();
+    
+    if (should_log(MASK_LOG_ATTITUDE_FAST)) {
+        Log_Write_Attitude();
+        Log_Write_EWQuat();
+    }
+
+    if (should_log(MASK_LOG_IMU)) {
+        Log_Write_IMU();
+        DataFlash.Log_Write_IMUDT(ins);
+    }
     
     
     // updated the summed gyro used for ground steering and
@@ -281,6 +281,7 @@ void Plane::update_logging1(void)
 {
     if (should_log(MASK_LOG_ATTITUDE_MED) && !should_log(MASK_LOG_ATTITUDE_FAST)) {
         Log_Write_Attitude();
+        Log_Write_EWQuat();
     }
 
     if (should_log(MASK_LOG_ATTITUDE_MED) && !should_log(MASK_LOG_IMU))
