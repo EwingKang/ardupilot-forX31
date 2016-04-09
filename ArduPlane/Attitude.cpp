@@ -169,7 +169,7 @@ void Plane::stabilize_stick_mixing_fbw()
         control_mode == QLOITER ||
         control_mode == QLAND ||
         control_mode == TRAINING ||
-        (control_mode == AUTO && g.auto_fbw_steer)) {
+        (control_mode == AUTO && g.auto_fbw_steer == 42)) {
         return;
     }
     // do FBW style stick mixing. We don't treat it linearly
@@ -670,7 +670,7 @@ bool Plane::suppress_throttle(void)
         return false;
     }
 
-    if (control_mode==AUTO && g.auto_fbw_steer) {
+    if (control_mode==AUTO && g.auto_fbw_steer == 42) {
         // user has throttle control
         return false;
     }

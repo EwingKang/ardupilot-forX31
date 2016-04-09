@@ -561,7 +561,7 @@ static const struct LogStructure log_structure[] = {
     { LOG_STATUS_MSG, sizeof(log_Status),
       "STAT", "QBfBBBBBB",  "TimeUS,isFlying,isFlyProb,Armed,Safety,Crash,Still,Stage,Hit" },
     { LOG_QTUN_MSG, sizeof(QuadPlane::log_QControl_Tuning),
-      "QTUN", "Qffffehh", "TimeUS,AngBst,ThrOut,DAlt,Alt,BarAlt,DCRt,CRt" },
+      "QTUN", "Qffffehhff", "TimeUS,AngBst,ThrOut,DAlt,Alt,BarAlt,DCRt,CRt,DVx,DVy" },
     { LOG_EWQ_MSG, sizeof(log_ewing_quat),      
       "EWQ", "QBffffffff", "TimeUS,haveV,vQ0,vQ1,vQ2,vQ3,VtoBQ0,VtoBQ1,VtoBQ2,VtoBQ3" },// EWING quaternion logging
     { LOG_EWA_MSG, sizeof(log_ewing_aero),      
