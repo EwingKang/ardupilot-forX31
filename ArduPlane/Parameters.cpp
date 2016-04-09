@@ -774,14 +774,12 @@ const AP_Param::Info Plane::var_info[] = {
     // @User: Standard
     GSCALAR(min_aoa_in_cd_ew,    "MIN_AOA_IN_CD_EW",    MIN_AOA_IN_CD_EW),
     
-    // @Param: AOA_CMPNSTR_ENBL_EW
+    // @Param: AOA_CMPNSTR_EW
     // @DisplayName: EWING mode AOA compensator
-    // @Description: This  minimum AOA in EWING mode
-    // @Units:
-    // @Range: 0 5
-    // @Increment: 1
+    // @Description: This parameter enables AOA compensator. Which should make canard always point toward inflow.
+    // @Values: 0:Disabled 1:Enable
     // @User: Standard
-    GSCALAR(enable_aoa_cmpnstr_ew,    "AOA_CMPNSTR_ENBL_EW",    AOA_CMPNSTR_ENBL_EW),
+    GSCALAR(enable_aoa_cmpnstr_ew,    "AOA_CMPNSTR_EW",    AOA_CMPNSTR_EW),
     
     // @Param: MAX_CNRD_AOA_EW
     // @DisplayName: EWING canard max AOA output
