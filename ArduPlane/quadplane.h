@@ -14,6 +14,7 @@ class QuadPlane
 {
 public:
     friend class Plane;
+    friend class Tuning;
     QuadPlane(AP_AHRS_NavEKF &_ahrs);
 
     // var_info for holding Parameter information
@@ -70,6 +71,8 @@ public:
         int16_t  climb_rate;
         float    dvx;
         float    dvy;
+        float    dax;
+        float    day;
     };
         
 private:
@@ -206,9 +209,11 @@ private:
         QLAND_FINAL,
         QLAND_COMPLETE
     } land_state;
-    int32_t land_yaw_cd;
-    float land_wp_proportion;
-    float land_speed_scale;
+    struct {
+        int32_t yaw_cd;
+        float speed_scale;
+        Vector2f target_velocity;
+    } land;
 
     enum frame_class {
         FRAME_CLASS_QUAD=0,

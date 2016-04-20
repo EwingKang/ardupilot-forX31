@@ -542,7 +542,7 @@ void Plane::Log_Write_Home_And_Origin()
     }
 }
 
-static const struct LogStructure log_structure[] = {
+const struct LogStructure Plane::log_structure[] = {
     LOG_COMMON_STRUCTURES,
     { LOG_PERFORMANCE_MSG, sizeof(log_Performance), 
       "PM",  "QIHIhhhBH", "TimeUS,LTime,MLC,gDt,GDx,GDy,GDz,I2CErr,INSErr" },
@@ -561,7 +561,7 @@ static const struct LogStructure log_structure[] = {
     { LOG_STATUS_MSG, sizeof(log_Status),
       "STAT", "QBfBBBBBB",  "TimeUS,isFlying,isFlyProb,Armed,Safety,Crash,Still,Stage,Hit" },
     { LOG_QTUN_MSG, sizeof(QuadPlane::log_QControl_Tuning),
-      "QTUN", "Qffffehhff", "TimeUS,AngBst,ThrOut,DAlt,Alt,BarAlt,DCRt,CRt,DVx,DVy" },
+      "QTUN", "Qffffehhffff", "TimeUS,AngBst,ThrOut,DAlt,Alt,BarAlt,DCRt,CRt,DVx,DVy,DAx,DAy" },
     { LOG_EWQ_MSG, sizeof(log_ewing_quat),      
       "EWQ", "QBffffffff", "TimeUS,haveV,vQ0,vQ1,vQ2,vQ3,VtoBQ0,VtoBQ1,VtoBQ2,VtoBQ3" },// EWING quaternion logging
     { LOG_EWA_MSG, sizeof(log_ewing_aero),      
@@ -570,6 +570,8 @@ static const struct LogStructure log_structure[] = {
     { LOG_OPTFLOW_MSG, sizeof(log_Optflow),
       "OF",   "QBffff",   "TimeUS,Qual,flowX,flowY,bodyX,bodyY" },
 #endif
+    { LOG_PARAMTUNE_MSG, sizeof(Tuning::log_ParameterTuning),
+      "PTUN", "QBfff",          "TimeUS,Param,TunVal,TunLo,TunHi" },  
     TECS_LOG_FORMAT(LOG_TECS_MSG)
 };
 

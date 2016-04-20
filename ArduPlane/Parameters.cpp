@@ -1203,6 +1203,10 @@ const AP_Param::Info Plane::var_info[] = {
     // @Path: quadplane.cpp
     GOBJECT(quadplane,           "Q_", QuadPlane),
 
+    // @Group: TUNE_
+    // @Path: tuning.cpp
+    GOBJECT(tuning,           "TUNE_", Tuning),
+    
     // @Group: Q_A_
     // @Path: ../libraries/AC_AttitudeControl/AC_AttitudeControl_Multi.cpp
     { AP_PARAM_GROUP, "Q_A_", Parameters::k_param_q_attitude_control,
@@ -1267,6 +1271,14 @@ const AP_Param::Info Plane::var_info[] = {
     // @Path: ../libraries/RC_Channel/RC_Channel.cpp,../libraries/RC_Channel/RC_Channel_aux.cpp
     GGROUP(rc_14,                    "RC14_", RC_Channel_aux),
 
+    // @Group: RC15_
+    // @Path: ../libraries/RC_Channel/RC_Channel.cpp,../libraries/RC_Channel/RC_Channel_aux.cpp
+    GGROUP(rc_15,                    "RC15_", RC_Channel_aux),
+
+    // @Group: RC16_
+    // @Path: ../libraries/RC_Channel/RC_Channel.cpp,../libraries/RC_Channel/RC_Channel_aux.cpp
+    GGROUP(rc_16,                    "RC16_", RC_Channel_aux),
+    
     // @Group: RLL2SRV_
     // @Path: ../libraries/APM_Control/AP_RollController.cpp
 	GOBJECT(rollController,         "RLL2SRV_",   AP_RollController),
@@ -1480,5 +1492,11 @@ void Plane::load_parameters(void)
     // Load all auto-loaded EEPROM variables
     AP_Param::load_all();
     AP_Param::convert_old_parameters(&conversion_table[0], ARRAY_SIZE(conversion_table));
+
+    if (quadplane.enable) {
+        // quadplanes needs a higher loop rate
+        AP_Param::set_default_by_name("SCHED_LOOP_RATE", 300);
+    }
+    
     cliSerial->printf("load_all took %uus\n", (unsigned)(micros() - before));
 }

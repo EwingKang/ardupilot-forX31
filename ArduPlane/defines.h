@@ -119,7 +119,8 @@ enum log_messages {
     LOG_ARM_DISARM_MSG,
     LOG_STATUS_MSG,
     LOG_OPTFLOW_MSG,
-    LOG_QTUN_MSG, 
+    LOG_QTUN_MSG,
+    LOG_PARAMTUNE_MSG
     LOG_EWQ_MSG,    //EWING my logger define enum
     LOG_EWA_MSG
 };
