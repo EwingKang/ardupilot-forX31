@@ -66,7 +66,8 @@ enum FlightMode {
     QHOVER        = 18,
     QLOITER       = 19,
     QLAND         = 20, 
-    FLY_BY_WIRE_EW= 21      // EWING my mode
+    FLY_BY_WIRE_EW= 21,     // EWING my mode
+    NDI_EW        = 22      // EWING NDI
 };
 
 // type of stick mixing enabled
