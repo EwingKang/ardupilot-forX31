@@ -844,6 +844,133 @@ const AP_Param::Info Plane::var_info[] = {
     // @User: Standard
     GSCALAR(ctrl_trans_lb_ew,    "CTRL_TRANS_LB_EW",    CTRL_TRANS_LB_EW),
     
+    // @Param: MAX_THRUST_EW
+    // @DisplayName: EWING maximum thrust
+    // @Description: This will be set for figuring what thrust we'll currently at
+    // @Units: N
+    // @Range: 0 100
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(max_thrust_ew,      "MAX_THRUST_EW",    MAX_THRUST_EW),
+    
+    //EWING NDI 
+    // @Param: NDI_KP_AOA_EW
+    // @DisplayName: EWING NDI AOA P Gain
+    // @Description: NDI AOA P Gain
+    // @Units: (rad/s)/rad
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_kp_aoa_ew,      "NDI_KP_AOA_EW",    NDI_KP_AOA_EW),
+    
+    // @Param: NDI_KP_MU_EW
+    // @DisplayName: EWING NDI MU P Gain
+    // @Description: NDI MU P Gain
+    // @Units: (rad/s)/rad
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_kp_mu_ew,       "NDI_KP_MU_EW",     NDI_KP_MU_EW),
+    
+    // @Param: NDI_KP_SS_EW
+    // @DisplayName: EWING NDI SS P Gain
+    // @Description: NDI SS P Gain
+    // @Units: (rad/s)/rad
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_kp_ss_ew,       "NDI_KP_SS_EW",     NDI_KP_SS_EW),
+    
+    // @Param: NDI_KP_P_EW
+    // @DisplayName: EWING NDI P P Gain
+    // @Description: NDI P P Gain
+    // @Units: (rad/s)/rad
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_kp_p_ew,        "NDI_KP_P_EW",       NDI_KP_P_EW),
+    
+    // @Param: NDI_KP_Q_EW
+    // @DisplayName: EWING NDI Q P Gain
+    // @Description: NDI Q P Gain
+    // @Units: (rad/s)/rad
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_kp_q_ew,        "NDI_KP_Q_EW",       NDI_KP_Q_EW),
+    
+    // @Param: NDI_KP_R_EW
+    // @DisplayName: EWING NDI R P Gain
+    // @Description: NDI R P Gain
+    // @Units: (rad/s)/rad
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_kp_r_ew,        "NDI_KP_R_EW",       NDI_KP_R_EW),
+    
+    // @Param: NDI_IXX_EW
+    // @DisplayName: EWING NDI Momoent of Inertia XX
+    // @Description: NDI Momoent of Inertia XX
+    // @Units: kg*m^2
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_ixx_ew,         "NDI_IXX_EW",        NDI_IXX_EW),
+    
+    // @Param: NDI_IYY_EW
+    // @DisplayName: EWING NDI Momoent of Inertia YY
+    // @Description: NDI Momoent of Inertia YY
+    // @Units: kg*m^2
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_iyy_ew,         "NDI_IYY_EW",        NDI_IYY_EW),
+    
+    // @Param: NDI_IZZ_EW
+    // @DisplayName: EWING NDI Momoent of Inertia ZZ
+    // @Description: NDI Momoent of Inertia ZZ
+    // @Units: kg*m^2
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_izz_ew,         "NDI_IZZ_EW",        NDI_IZZ_EW),
+    
+    // @Param: NDI_IXZ_EW
+    // @DisplayName: EWING NDI Momoent of Inertia XZ
+    // @Description: NDI Momoent of Inertia XZ
+    // @Units: kg*m^2
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_ixz_ew,         "NDI_IXZ_EW",        NDI_IXZ_EW),
+    
+    // @Param: NDI_MASS_EW
+    // @DisplayName: EWING NDI MASS
+    // @Description: NDI MASS
+    // @Units: kg*m^2
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_mass_ew,        "NDI_MASS_EW",       NDI_MASS_EW),
+    
+    // @Param: NDI_MW_B_EW
+    // @DisplayName: EWING NDI Main Wing Wingspan
+    // @Description:  NDI Main Wing Wingspan
+    // @Units: meter
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_mw_b_ew,        "NDI_MW_B_EW",       NDI_MW_B_EW),
+    
+    // @Param: NDI_MW_C_EW
+    // @DisplayName: EWING NDI Main Wing Chord
+    // @Description:  NDI Main Wing Chord
+    // @Units: meter
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_mw_c_ew,        "NDI_MW_C_EW",       NDI_MW_C_EW),
+    
     // @Param: ACRO_LOCKING
     // @DisplayName: ACRO mode attitude locking
     // @Description: Enable attitude locking when sticks are released

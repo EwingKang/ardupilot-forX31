@@ -356,7 +356,22 @@ public:
         k_param_k_mu_to_rate_ew, 
         k_param_aoa_trim_cd_ew,
         k_param_ctrl_trans_ub_ew,
-        k_param_ctrl_trans_lb_ew
+        k_param_ctrl_trans_lb_ew,
+        k_param_max_thrust_ew,
+        //EWING NDI 
+        k_param_ndi_kp_aoa_ew = 262,
+        k_param_ndi_kp_mu_ew,
+        k_param_ndi_kp_ss_ew,
+        k_param_ndi_kp_p_ew,
+        k_param_ndi_kp_q_ew,
+        k_param_ndi_kp_r_ew, 
+        k_param_ndi_ixx_ew,
+        k_param_ndi_iyy_ew,
+        k_param_ndi_izz_ew,
+        k_param_ndi_ixz_ew,
+        k_param_ndi_mass_ew,
+        k_param_ndi_mw_b_ew,
+        k_param_ndi_mw_c_ew,
     };
 
     AP_Int16 format_version;
@@ -544,6 +559,22 @@ public:
     AP_Int16 aoa_trim_cd_ew;
     AP_Float ctrl_trans_ub_ew;
     AP_Float ctrl_trans_lb_ew;
+    AP_Float max_thrust_ew;
+    
+    //EWING NDI 
+    AP_Float ndi_kp_aoa_ew;
+    AP_Float ndi_kp_mu_ew;
+    AP_Float ndi_kp_ss_ew;
+    AP_Float ndi_kp_p_ew;
+    AP_Float ndi_kp_q_ew;
+    AP_Float ndi_kp_r_ew;
+    AP_Float ndi_ixx_ew;
+    AP_Float ndi_iyy_ew;
+    AP_Float ndi_izz_ew;
+    AP_Float ndi_ixz_ew;
+    AP_Float ndi_mass_ew;
+    AP_Float ndi_mw_b_ew;
+    AP_Float ndi_mw_c_ew;
 
     // RC channels
     RC_Channel rc_1;

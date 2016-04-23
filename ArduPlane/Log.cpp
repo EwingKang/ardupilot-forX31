@@ -437,6 +437,34 @@ void Plane::Log_Write_EWAero(const float &Vspeed)
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
 
+// EWING my NDI logger
+struct PACKED log_ewing_ndi {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float a;
+    float b;
+    float c;
+    float d;
+    float e;
+    float f;
+};
+
+void Plane::Log_Write_EWNDI(const float &Vspeed)
+{
+    struct log_ewing_ndi pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_EWNDI_MSG)
+        ,time_us            : AP_HAL::micros64()
+        ,a      : 0
+        ,b      : 1
+        ,c      : 2
+        ,d      : 3
+        ,e      : 4
+        ,f      : 5
+        };
+
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
 struct PACKED log_Optflow {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -565,7 +593,9 @@ const struct LogStructure Plane::log_structure[] = {
     { LOG_EWQ_MSG, sizeof(log_ewing_quat),      
       "EWQ", "QBffffffff", "TimeUS,haveV,vQ0,vQ1,vQ2,vQ3,VtoBQ0,VtoBQ1,VtoBQ2,VtoBQ3" },// EWING quaternion logging
     { LOG_EWA_MSG, sizeof(log_ewing_aero),      
-      "EWA", "QBffff", "TimeUS,haveAero,aeroVel,AOA,SS,MU" },  // EWING aero logging 
+      "EWA", "QBffff", "TimeUS,haveAero,aeroVel,AOA,SS,MU" },   // EWING aero logging 
+    { LOG_EWNDI_MSG, sizeof(log_ewing_ndi),      
+      "EWA", "Qffffff", "TimeUS,a,b,c,d,e,f" },                 // EWING NDI logging 
 #if OPTFLOW == ENABLED
     { LOG_OPTFLOW_MSG, sizeof(log_Optflow),
       "OF",   "QBffff",   "TimeUS,Qual,flowX,flowY,bodyX,bodyY" },
