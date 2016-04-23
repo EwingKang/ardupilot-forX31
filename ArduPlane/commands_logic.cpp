@@ -32,6 +32,8 @@ bool Plane::start_command(const AP_Mission::Mission_Command& cmd)
         // once landed, post some landing statistics to the GCS
         auto_state.post_landing_stats = false;
 
+        nav_controller->set_data_is_stale();
+
         // reset loiter start time. New command is a new loiter
         loiter.start_time_ms = 0;
 
@@ -337,7 +339,6 @@ void Plane::do_RTL(void)
         loiter.direction = 1;
     }
 
-    update_flight_stage();
     setup_glide_slope();
     setup_turn_angle();
 
@@ -360,6 +361,7 @@ void Plane::do_takeoff(const AP_Mission::Mission_Command& cmd)
     next_WP_loc.lng = home.lng + 10;
     auto_state.takeoff_speed_time_ms = 0;
     auto_state.takeoff_complete = false;                            // set flag to use gps ground course during TO.  IMU will be doing yaw drift correction
+    auto_state.height_below_takeoff_to_level_off_cm = 0;
     // Flag also used to override "on the ground" throttle disable
 
     // zero locked course
@@ -601,7 +603,10 @@ bool Plane::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 
 bool Plane::verify_loiter_unlim()
 {
-    if (mission.get_current_nav_cmd().p1 <= 1 && abs(g.rtl_radius) > 1) {
+    if (control_mode == AUTO && mission.state() != AP_Mission::MISSION_RUNNING) {
+        // end of mission RTL
+        update_loiter(g.rtl_radius? g.rtl_radius : g.loiter_radius);
+    } else if (mission.get_current_nav_cmd().p1 <= 1 && abs(g.rtl_radius) > 1) {
         // if mission radius is 0,1, and rtl_radius is valid, use rtl_radius.
         loiter.direction = (g.rtl_radius < 0) ? -1 : 1;
         update_loiter(abs(g.rtl_radius));
@@ -1005,7 +1010,6 @@ void Plane::exit_mission_callback()
             rally.calc_best_rally_or_home_location(current_loc, get_RTL_altitude());
         auto_rtl_command.id = MAV_CMD_NAV_LOITER_UNLIM;
         setup_terrain_target_alt(auto_rtl_command.content.location);
-        update_flight_stage();
         setup_glide_slope();
         setup_turn_angle();
         start_command(auto_rtl_command);

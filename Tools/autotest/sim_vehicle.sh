@@ -258,6 +258,21 @@ case $FRAME in
         MODEL="$FRAME"
         DEFAULTS_PATH="$autotest/copter_params.parm"
 	;;
+    tri*)
+	BUILD_TARGET="sitl-tri"
+        MODEL="$FRAME"
+        DEFAULTS_PATH="$autotest/tri_params.parm"
+	;;
+    y6*)
+	BUILD_TARGET="sitl-y6"
+        MODEL="$FRAME"
+        DEFAULTS_PATH="$autotest/y6_params.parm"
+	;;
+    firefly*)
+	BUILD_TARGET="sitl"
+        MODEL="$FRAME"
+        DEFAULTS_PATH="$autotest/firefly.parm"
+	;;
     heli*)
 	BUILD_TARGET="sitl-heli"
         MODEL="$FRAME"
@@ -297,6 +312,21 @@ case $FRAME in
 	BUILD_TARGET="sitl"
         MODEL="$FRAME"
         DEFAULTS_PATH="$autotest/quadplane.parm"
+	;;
+    plane-elevon*)
+	BUILD_TARGET="sitl"
+        MODEL="$FRAME"
+        DEFAULTS_PATH="$autotest/plane-elevons.parm"
+	;;
+    plane-vtail*)
+	BUILD_TARGET="sitl"
+        MODEL="$FRAME"
+        DEFAULTS_PATH="$autotest/plane-vtail.parm"
+	;;
+    plane*)
+	BUILD_TARGET="sitl"
+        MODEL="$FRAME"
+        DEFAULTS_PATH="$autotest/plane.parm"
 	;;
     *-heli)
 	BUILD_TARGET="sitl-heli"
