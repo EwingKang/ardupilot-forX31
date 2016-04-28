@@ -174,10 +174,12 @@ void Plane::ahrs_update()
            Which is different than my normal happits. */
         errQuat = velQuat.inverse() * attQuat;  // qb = qv*qvberr
         aero_available = errQuat.to_vector132(eular132);
+        vel_gamma = atan2f(-vel_NED.z, Vector2f(vel_NED.x, vel_NED.y).length());
     } else {
         errQuat.initialise();
         velQuat.initialise();
         eular132.zero();
+        vel_gamma = 0;
         aero_available = false;
     }
     

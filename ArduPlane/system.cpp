@@ -250,6 +250,8 @@ void Plane::init_ardupilot()
     optflow.init();
 #endif
 
+    ndi_calculate_inertia();
+
 }
 
 //********************************************************************************

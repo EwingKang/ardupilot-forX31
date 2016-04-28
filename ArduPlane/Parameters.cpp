@@ -790,24 +790,6 @@ const AP_Param::Info Plane::var_info[] = {
     // @User: Standard
     GSCALAR(enable_aoa_cmpnstr_ew,    "AOA_CMPNSTR_EW",    AOA_CMPNSTR_EW),
     
-    // @Param: MAX_CNRD_AOA_EW
-    // @DisplayName: EWING canard max AOA output
-    // @Description: This is the angle that scales the output angle of canard
-    // @Units:
-    // @Range: 0 5
-    // @Increment: 1
-    // @User: Standard
-    GSCALAR(max_canard_aoa_ew,    "MAX_CNRD_AOA_EW",    MAX_CNRD_AOA_EW),
-    
-    // @Param: MIN_CNRD_AOA_EW
-    // @DisplayName: EWING canard max AOA output
-    // @Description: This is the angle that scales the output angle of canard
-    // @Units:
-    // @Range: 0 5
-    // @Increment: 1
-    // @User: Standard
-    GSCALAR(min_canard_aoa_ew,    "MIN_CNRD_AOA_EW",    MIN_CNRD_AOA_EW),
-    
     // @Param: K_AOA_TO_RATE_EW
     // @DisplayName: EWING AOA to rate gain
     // @Description: The linear gain of AOA c-Degree error to c-Degree pitch rate gain
@@ -828,12 +810,21 @@ const AP_Param::Info Plane::var_info[] = {
     
     // @Param: AOA_TRIM_CD_EW
     // @DisplayName: EWING nutural stick AOA trim
-    // @Description: The linear gain of MU c-Degree error to c-Degree roll rate gain
+    // @Description: nutural stick AOA trim
     // @Units: centi-Degree
     // @Range: -8000 9000
     // @Increment: 1
     // @User: Standard
     GSCALAR(aoa_trim_cd_ew,    "AOA_TRIM_CD_EW",    AOA_TRIM_CD_EW),
+    
+    // @Param: BETA_TRIM_CD_EW
+    // @DisplayName: EWING nutural stick Beta trim
+    // @Description: nutural stick Beta trim
+    // @Units: centi-Degree
+    // @Range: -8000 8000
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(beta_trim_cd_ew,    "BETA_TRIM_CD_EW",    BETA_TRIM_CD_EW),
     
     // @Param: CTRL_TRANS_UB_EW
     // @DisplayName: EWING control transition upper bound
@@ -861,6 +852,61 @@ const AP_Param::Info Plane::var_info[] = {
     // @Increment: 0.01
     // @User: Standard
     GSCALAR(max_thrust_ew,      "MAX_THRUST_EW",    MAX_THRUST_EW),
+    
+    // @Param: MAX_AILE_ANG_EW
+    // @DisplayName: EWING absolute maximum aileron output angle
+    // @Description: This is the maximum angle that aileron can rotates in both direction
+    // @Units: degrees
+    // @Range: 0 90
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(max_aileron_ang_ew,    "MAX_AILE_ANG_EW",    MAX_AILE_ANG_EW),
+        
+    // @Param: MAX_CNRD_ANG_EW
+    // @DisplayName: EWING maximum canard output angle
+    // @Description: This is the maximum angle that canard can rotates in +y(up) direction 
+    // @Units: degrees
+    // @Range: 0 90
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(max_canard_ang_ew,    "MAX_CNRD_ANG_EW",    MAX_CNRD_ANG_EW),
+    
+    // @Param: MIN_CNRD_ANG_EW
+    // @DisplayName: EWING minimum canard output angle
+    // @Description: This is the maximum angle that canard can rotates in -y(down) direction 
+    // @Units: degrees
+    // @Range: -90 0
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(min_canard_ang_ew,    "MIN_CNRD_ANG_EW",    MIN_CNRD_ANG_EW),
+    
+    // @Param: MAX_RUDD_ANG_EW
+    // @DisplayName: EWING absolute maximum rudder output angle
+    // @Description: This is the maximum angle that rudder can rotates in both direction
+    // @Units: degrees
+    // @Range: 0 90
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(max_rudder_ang_ew,    "MAX_RUDD_ANG_EW",    MAX_RUDD_ANG_EW),
+    
+    // @Param: MAX_TVC_Y_ANG_EW
+    // @DisplayName: EWING absolute maximum lateral TVC output angle
+    // @Description: This is the maximum angle that Thrust Vectoring Control can rotates in lateral direction
+    // @Units: degrees   
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(max_tvc_y_ang_ew,    "MAX_TVC_Y_ANG_EW",    MAX_TVC_Y_ANG_EW),
+
+    // @Param: MAX_TVC_X_ANG_EW
+    // @DisplayName: EWING canard max angle output
+    // @Description: This is the maximum angle that Thrust Vectoring Control can rotates in vertical direction    
+    // @Units: degrees
+    // @Range: 0 45
+    // @Increment: 1
+    // @User: Standard
+    GSCALAR(max_tvc_z_ang_ew,    "MAX_TVC_X_ANG_EW",    MAX_TVC_X_ANG_EW),
+
     
     //EWING NDI 
     // @Param: NDI_KP_AOA_EW
@@ -893,7 +939,7 @@ const AP_Param::Info Plane::var_info[] = {
     // @Param: NDI_KP_P_EW
     // @DisplayName: EWING NDI P P Gain
     // @Description: NDI P P Gain
-    // @Units: (rad/s)/rad
+    // @Units: (rad/s^2)/rad
     // @Range: 0 10
     // @Increment: 0.01
     // @User: Standard
@@ -902,7 +948,7 @@ const AP_Param::Info Plane::var_info[] = {
     // @Param: NDI_KP_Q_EW
     // @DisplayName: EWING NDI Q P Gain
     // @Description: NDI Q P Gain
-    // @Units: (rad/s)/rad
+    // @Units: (rad/s^2)/rad
     // @Range: 0 10
     // @Increment: 0.01
     // @User: Standard
@@ -911,11 +957,65 @@ const AP_Param::Info Plane::var_info[] = {
     // @Param: NDI_KP_R_EW
     // @DisplayName: EWING NDI R P Gain
     // @Description: NDI R P Gain
-    // @Units: (rad/s)/rad
+    // @Units: (rad/s^2)/rad
     // @Range: 0 10
     // @Increment: 0.01
     // @User: Standard
     GSCALAR(ndi_kp_r_ew,        "NDI_KP_R_EW",       NDI_KP_R_EW),
+    
+    // @Param: NDI_KI_AOA_EW
+    // @DisplayName: EWING NDI AOA I Gain
+    // @Description: NDI AOA I Gain
+    // @Units: (rad/s)/rad/s
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_ki_aoa_ew,      "NDI_KI_AOA_EW",    NDI_KI_AOA_EW),
+    
+    // @Param: NDI_KI_MU_EW
+    // @DisplayName: EWING NDI MU I Gain
+    // @Description: NDI MU I Gain
+    // @Units: (rad/s)/rad/s
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_ki_mu_ew,       "NDI_KI_MU_EW",     NDI_KI_MU_EW),
+    
+    // @Param: NDI_KI_SS_EW
+    // @DisplayName: EWING NDI SS I Gain
+    // @Description: NDI SS I Gain
+    // @Units: (rad/s)/rad/s
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_ki_ss_ew,       "NDI_KI_SS_EW",     NDI_KI_SS_EW),
+    
+    // @Param: NDI_KI_P_EW
+    // @DisplayName: EWING NDI P I Gain
+    // @Description: NDI P I Gain
+    // @Units: (rad/s^2)/rad/s
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_ki_p_ew,        "NDI_KI_P_EW",       NDI_KI_P_EW),
+    
+    // @Param: NDI_KI_Q_EW
+    // @DisplayName: EWING NDI Q I Gain
+    // @Description: NDI Q I Gain
+    // @Units: (rad/s^2)/rad/s
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_ki_q_ew,        "NDI_KI_Q_EW",       NDI_KI_Q_EW),
+    
+    // @Param: NDI_KI_R_EW
+    // @DisplayName: EWING NDI R I Gain
+    // @Description: NDI R I Gain
+    // @Units: (rad/s^2)/rad/s
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_ki_r_ew,        "NDI_KI_R_EW",       NDI_KI_R_EW),
     
     // @Param: NDI_IXX_EW
     // @DisplayName: EWING NDI Momoent of Inertia XX
@@ -979,6 +1079,15 @@ const AP_Param::Info Plane::var_info[] = {
     // @Increment: 0.01
     // @User: Standard
     GSCALAR(ndi_mw_c_ew,        "NDI_MW_C_EW",       NDI_MW_C_EW),
+    
+    // @Param: NDI_MW_S_EW
+    // @DisplayName: EWING NDI MainWing Surface area
+    // @Description:  NDI Main Wing Surface area
+    // @Units: meter^2
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_mw_S_ew,        "NDI_MW_S_EW",       NDI_MW_S_EW),
     
     // @Param: ACRO_LOCKING
     // @DisplayName: ACRO mode attitude locking

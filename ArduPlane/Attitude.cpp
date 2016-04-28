@@ -373,9 +373,9 @@ void Plane::fly_by_wire_ewing(float speed_scaler)
         float aoa_compensation = 0;
         if(g.enable_aoa_cmpnstr_ew) {
             if(ew_AOA_cd > 0) {
-                aoa_compensation = ew_AOA_cd * (g.max_canard_aoa_ew*100.0f/4500);
+                aoa_compensation = ew_AOA_cd * (g.max_canard_ang_ew*100.0f/4500);
             }else {
-                aoa_compensation = -ew_AOA_cd * (g.min_canard_aoa_ew*100.0f/4500);
+                aoa_compensation = -ew_AOA_cd * (g.min_canard_ang_ew*100.0f/4500);
             }
         }
         
@@ -1068,9 +1068,12 @@ void Plane::set_servos(void)
                     control_mode == TRAINING ||
                     control_mode == ACRO ||
                     control_mode == FLY_BY_WIRE_A ||
+                    control_mode == FLY_BY_WIRE_EW ||       
+                    control_mode == NDI_EW ||
                     control_mode == AUTOTUNE)) {
             // manual pass through of throttle while in FBWA or
-            // STABILIZE mode with THR_PASS_STAB set
+            // STABILIZE mode with THR_PASS_STAB set 
+            // also pass through EWING
             channel_throttle->radio_out = channel_throttle->radio_in;
         } else if (control_mode == GUIDED && 
                    guided_throttle_passthru) {

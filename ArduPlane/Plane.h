@@ -577,6 +577,9 @@ private:
     Vector3f vel_NED;
     
     Vector3f eular132;      //[MU, AOA, SS]
+    float vel_gamma;        //velocity pitching angle
+    
+    Matrix3f inertiaMat, inertiaMatInv;     // Moment of Inertia matrix and its inverse
 
     // we separate out rudder input to allow for RUDDER_ONLY=1
     int16_t rudder_input;
@@ -1027,7 +1030,6 @@ private:
     void stabilize_training(float speed_scaler);
     void stabilize_acro(float speed_scaler);
     void fly_by_wire_ewing(float speed_scaler);           //EWING my mode
-    void ndi_ewing(float speed_scaler);           //EWING my mode
     void calc_nav_yaw_coordinated(float speed_scaler);
     void calc_nav_yaw_course(void);
     void calc_nav_yaw_ground(void);
@@ -1072,7 +1074,19 @@ private:
     void parachute_release();
     bool parachute_manual_release();
     void accel_cal_update(void);
-
+    //EWING NDI
+    void ndi_ewing(float speed_scaler);                 
+    float aero_coef(const uint16_t &ind, const float &alpha);
+    void aero_desired_rate(float &a_dot_des, float &b_dot_des, float &m_dot_des, const float &delta_time, const bool &reset_i);
+    bool slow_dynamic_rate(float &alpha_dot_dym, float &beta_dopt_dym, float &mu_dot_dym);
+    void omega_desired_rate(const Vector3f &omega_c, Vector3f &omega_dot_des, const float &delta_time, const bool &reset_i);
+    bool fast_dynamic_rate(Vector3f &omega_dot_dnm);
+    bool get_fl_input_mat(Matrix3f &g_fR, Matrix3f &g_fRinv);
+    void ndi_set_servo(const Vector3f &actuator_cmd);
+    void ew_fbwa_backup();
+    void ndi_calculate_inertia();
+    
+    
 public:
     void mavlink_delay_cb();
     void failsafe_check(void);
