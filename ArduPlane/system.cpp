@@ -430,7 +430,11 @@ void Plane::set_mode(enum FlightMode mode)
 
     case AUTO:
         auto_throttle_mode = true;
-        auto_state.vtol_mode = false;
+        if (quadplane.available() && quadplane.enable == 2) {
+            auto_state.vtol_mode = true;
+        } else {
+            auto_state.vtol_mode = false;
+        }
         next_WP_loc = prev_WP_loc = current_loc;
         // start or resume the mission, based on MIS_AUTORESET
         mission.start_or_resume();
@@ -848,5 +852,8 @@ bool Plane::disarm_motors(void)
     //only log if disarming was successful
     change_arm_state();
 
+    // reload target airspeed which could have been modified by a mission
+    plane.g.airspeed_cruise_cm.load();
+    
     return true;
 }

@@ -6,14 +6,14 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
 
     // @Param: ENABLE
     // @DisplayName: Enable QuadPlane
-    // @Description: This enables QuadPlane functionality, assuming quad motors on outputs 5 to 8
-    // @Values: 0:Disable,1:Enable
+    // @Description: This enables QuadPlane functionality, assuming multicopter motors start on output 5. If this is set to 2 then when starting AUTO mode it will initially be in VTOL AUTO mode.
+    // @Values: 0:Disable,1:Enable,2:Enable VTOL AUTO
     // @User: Standard
     AP_GROUPINFO_FLAGS("ENABLE", 1, QuadPlane, enable, 0, AP_PARAM_FLAG_ENABLE),
 
     // @Group: M_
     // @Path: ../libraries/AP_Motors/AP_MotorsMulticopter.cpp
-    AP_SUBGROUPPTR(motors, "M_", 2, QuadPlane, AP_MotorsMulticopter),
+    AP_SUBGROUPPTR(motors, "M_", 2, QuadPlane, AP_MOTORS_CLASS),
 
     // 3 ~ 8 were used by quadplane attitude control PIDs
 
@@ -303,6 +303,13 @@ bool QuadPlane::setup(void)
         goto failed;
     }
 
+#ifdef AP_MOTORS_FORCE_CLASS
+    RC_Channel_aux::set_aux_channel_default(RC_Channel_aux::k_motor1, CH_5);
+    RC_Channel_aux::set_aux_channel_default(RC_Channel_aux::k_motor2, CH_6);
+    RC_Channel_aux::set_aux_channel_default(RC_Channel_aux::k_motor4, CH_8);
+    RC_Channel_aux::set_aux_channel_default(RC_Channel_aux::k_motor7, CH_11);
+    motors = new AP_MOTORS_CLASS(plane.scheduler.get_loop_rate_hz());
+#else
     /*
       dynamically allocate the key objects for quadplane. This ensures
       that the objects don't affect the vehicle unless enabled and
@@ -333,6 +340,7 @@ bool QuadPlane::setup(void)
         hal.console->printf("Unknown frame class %u\n", (unsigned)frame_class.get());
         goto failed;
     }
+#endif // AP_MOTORS_CLASS
     if (!motors) {
         hal.console->printf("Unable to allocate motors\n");
         goto failed;
@@ -551,6 +559,15 @@ bool QuadPlane::should_relax(void)
     }
     bool relax_loiter = motors_lower_limit_start_ms != 0 && (millis() - motors_lower_limit_start_ms) > 1000;
     return relax_loiter;
+}
+
+// see if we are flying in vtol
+bool QuadPlane::is_flying_vtol(void)
+{
+    if (in_vtol_mode() && millis() - motors_lower_limit_start_ms > 5000) {
+        return true;
+    }
+    return false;
 }
 
 /*
@@ -948,33 +965,38 @@ bool QuadPlane::init_mode(void)
 /*
   handle a MAVLink DO_VTOL_TRANSITION
  */
-bool QuadPlane::handle_do_vtol_transition(const mavlink_command_long_t &packet)
+bool QuadPlane::handle_do_vtol_transition(enum MAV_VTOL_STATE state)
 {
     if (!available()) {
         plane.gcs_send_text_fmt(MAV_SEVERITY_NOTICE, "VTOL not available");
-        return MAV_RESULT_FAILED;
+        return false;
     }
     if (plane.control_mode != AUTO) {
         plane.gcs_send_text_fmt(MAV_SEVERITY_NOTICE, "VTOL transition only in AUTO");
-        return MAV_RESULT_FAILED;
+        return false;
     }
-    switch ((uint8_t)packet.param1) {
+    switch (state) {
     case MAV_VTOL_STATE_MC:
         if (!plane.auto_state.vtol_mode) {
             plane.gcs_send_text_fmt(MAV_SEVERITY_NOTICE, "Entered VTOL mode");
         }
         plane.auto_state.vtol_mode = true;
-        return MAV_RESULT_ACCEPTED;
+        return true;
+        
     case MAV_VTOL_STATE_FW:
         if (plane.auto_state.vtol_mode) {
             plane.gcs_send_text_fmt(MAV_SEVERITY_NOTICE, "Exited VTOL mode");
         }
         plane.auto_state.vtol_mode = false;
-        return MAV_RESULT_ACCEPTED;
+
+        return true;
+
+    default:
+        break;
     }
 
     plane.gcs_send_text_fmt(MAV_SEVERITY_NOTICE, "Invalid VTOL mode");
-    return MAV_RESULT_FAILED;
+    return false;
 }
 
 /*
@@ -1326,6 +1348,8 @@ void QuadPlane::check_land_complete(void)
         plane.disarm_motors();
         land_state = QLAND_COMPLETE;
         plane.gcs_send_text(MAV_SEVERITY_INFO,"Land complete");
+        // reload target airspeed which could have been modified by the mission
+        plane.g.airspeed_cruise_cm.load();
     }
 }
 

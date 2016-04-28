@@ -7,6 +7,16 @@
 #include <AC_AttitudeControl/AC_PosControl.h>
 #include <AC_WPNav/AC_WPNav.h>
 
+// uncomment this to force a different motor class
+// #define AP_MOTORS_FORCE_CLASS AP_MotorsTri
+
+
+#ifdef AP_MOTORS_FORCE_CLASS
+#define AP_MOTORS_CLASS AP_MOTORS_FORCE_CLASS
+#else
+#define AP_MOTORS_CLASS AP_MotorsMulticopter
+#endif
+
 /*
   QuadPlane specific functionality
  */
@@ -42,7 +52,7 @@ public:
         return available() && assisted_flight;
     }
     
-    bool handle_do_vtol_transition(const mavlink_command_long_t &packet);
+    bool handle_do_vtol_transition(enum MAV_VTOL_STATE state);
 
     bool do_vtol_takeoff(const AP_Mission::Mission_Command& cmd);
     bool do_vtol_land(const AP_Mission::Mission_Command& cmd);
@@ -62,6 +72,9 @@ public:
     // return desired forward throttle percentage
     int8_t forward_throttle_pct(void);        
     float get_weathervane_yaw_rate_cds(void);
+
+    // see if we are flying from vtol point of view
+    bool is_flying_vtol(void);
     
     struct PACKED log_QControl_Tuning {
         LOG_PACKET_HEADER;
@@ -94,7 +107,7 @@ private:
     AP_Int8 frame_class;
     AP_Int8 frame_type;
     
-    AP_MotorsMulticopter *motors;
+    AP_MOTORS_CLASS *motors;
     AC_AttitudeControl_Multi *attitude_control;
     AC_PosControl *pos_control;
     AC_WPNav *wp_nav;

@@ -224,7 +224,7 @@ and in your \$PATH
 
 Please get it from git://github.com/tridge/jsbsim.git
 See 
-  http://dev.ardupilot.com/wiki/simulation-2/sitl-simulator-software-in-the-loop/setting-up-sitl-on-linux/ 
+  http://dev.ardupilot.org/wiki/simulation-2/sitl-simulator-software-in-the-loop/setting-up-sitl-on-linux/ 
 for more details
 =========================================================
 EOF
@@ -242,15 +242,15 @@ autotest="../Tools/autotest"
 
 # modify build target based on copter frame type
 case $FRAME in
-    +|quad)
+    +|quad|quad-*)
 	BUILD_TARGET="sitl"
-        MODEL="+"
+        MODEL="$FRAME"
         DEFAULTS_PATH="$autotest/copter_params.parm"
 	;;
-    X)
+    X*)
 	BUILD_TARGET="sitl"
         EXTRA_PARM="param set FRAME 1;"
-        MODEL="X"
+        MODEL="$FRAME"
         DEFAULTS_PATH="$autotest/copter_params.parm"
 	;;
     octa*)
