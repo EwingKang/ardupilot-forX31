@@ -435,25 +435,30 @@ void Plane::Log_Write_EWAero(const float &Vspeed)
 struct PACKED log_ewing_ndi {
     LOG_PACKET_HEADER;
     uint64_t time_us;
-    float a;
-    float b;
-    float c;
-    float d;
-    float e;
-    float f;
+    int16_t haveSL;
+    int16_t haveFL;
+    float a_d_dm;
+    float b_d_dm;
+    float m_d_dm;
+    float wc_x;
+    float wc_y;
+    float wc_z;
 };
 
-void Plane::Log_Write_EWNDI(const float &Vspeed)
+void Plane::Log_Write_EWNDI(const int16_t &haveSlowLoop, const int16_t &haveFastLoop, 
+                            const Vector3f &aero_dot_dym, const Vector3f omega_cmd)
 {
     struct log_ewing_ndi pkt = {
         LOG_PACKET_HEADER_INIT(LOG_EWNDI_MSG)
         ,time_us            : AP_HAL::micros64()
-        ,a      : 0
-        ,b      : 1
-        ,c      : 2
-        ,d      : 3
-        ,e      : 4
-        ,f      : 5
+        ,haveSL             : haveSlowLoop
+        ,haveFL             : haveFastLoop
+        ,a_d_dm             : aero_dot_dym.x
+        ,b_d_dm             : aero_dot_dym.y
+        ,m_d_dm             : aero_dot_dym.z
+        ,wc_x               : omega_cmd.x
+        ,wc_y               : omega_cmd.y
+        ,wc_z               : omega_cmd.z
         };
 
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -587,9 +592,9 @@ const struct LogStructure Plane::log_structure[] = {
     { LOG_EWQ_MSG, sizeof(log_ewing_quat),      
       "EWQ", "QBffffffff", "TimeUS,haveV,vQ0,vQ1,vQ2,vQ3,VtoBQ0,VtoBQ1,VtoBQ2,VtoBQ3" },// EWING quaternion logging
     { LOG_EWA_MSG, sizeof(log_ewing_aero),      
-      "EWA", "QBffff", "TimeUS,haveAero,aeroVel,AOA,SS,MU" },   // EWING aero logging 
+      "EWA", "QBffff", "TimeUS,haveAero,aeroVel,AOA,SS,MU" },           // EWING aero logging 
     { LOG_EWNDI_MSG, sizeof(log_ewing_ndi),      
-      "EWA", "Qffffff", "TimeUS,a,b,c,d,e,f" },                 // EWING NDI logging 
+      "EWN", "Qccffffff", "TimeUS,haveSL,haveFL,a_d_dm,b_d_dm,m_d_dm,wc_x,wc_y,wc_z" }, // EWING NDI logging 
 #if OPTFLOW == ENABLED
     { LOG_OPTFLOW_MSG, sizeof(log_Optflow),
       "OF",   "QBffff",   "TimeUS,Qual,flowX,flowY,bodyX,bodyY" },

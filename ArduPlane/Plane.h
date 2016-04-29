@@ -824,7 +824,8 @@ private:
     void Log_Write_Vehicle_Startup_Messages();
     void Log_Write_EWQuat(void);                        //EWING Quaternion log
     void Log_Write_EWAero(const float &Vspeed);         //EWING Aero log
-    void Log_Write_EWNDI(const float &Vspeed);          //EWING NDI log
+    void Log_Write_EWNDI(const int16_t &haveSlowLoop, const int16_t &haveFastLoop, 
+                         const Vector3f &aero_dot_dym, const Vector3f omega_cmd   ); //EWING NDI log
     void Log_Read(uint16_t log_num, int16_t start_page, int16_t end_page);
     void start_logging();
 

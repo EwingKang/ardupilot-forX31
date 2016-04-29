@@ -15,15 +15,20 @@ void Plane::ndi_ewing(float speed_scaler)
 	_last_t = tnow;
 	float delta_time    = (float)dt * 0.001f;
 
-    float aspeed = 0;    
+    Vector3f omega_command;
+    Vector3f aero_dot_dym;
+    
     if ((aero_available)&&(vel_available)) {
         // slow loop
         float alpha_dot_des, beta_dot_des, mu_dot_des;
         float alpha_dot_dym, beta_dot_dym, mu_dot_dym;
-        Vector3f omega_command;
+        
         aero_desired_rate(alpha_dot_des, beta_dot_des, mu_dot_des, delta_time, reset_i);
+        Vector3f aero_dot_des(alpha_dot_des, beta_dot_des, mu_dot_des);
+             
         if(slow_dynamic_rate(alpha_dot_dym, beta_dot_dym, mu_dot_dym)) {
             // slow loop NDI
+            aero_dot_dym = Vector3f(alpha_dot_dym, beta_dot_dym, mu_dot_dym);
             float tan_beta = tanf(-eular132.z);
             float sec_beta = 1/cosf(-eular132.z);
             float cos_alpha = cosf(eular132.y);
@@ -34,21 +39,19 @@ void Plane::ndi_ewing(float speed_scaler)
             Matrix3f g_s1_inv;
             if(inverse3x3(&g_s1[0][0], &g_s1_inv[0][0])) {
                 // (5.3.29)
-                omega_command = g_s1_inv*(
-                                    Vector3f(alpha_dot_des, beta_dot_des, mu_dot_des) -
-                                    Vector3f(alpha_dot_dym, beta_dot_dym, mu_dot_dym) );
+                omega_command = g_s1_inv*( aero_dot_des - aero_dot_dym );
             } else {
                 //fail to get inverse
                 ew_fbwa_backup();
-                Log_Write_EWNDI(aspeed);
+                Log_Write_EWNDI(-2, 0, aero_dot_dym, aero_dot_des);
                 return;
             }
         }else {
-            // fail to get dynamic
+            // fail to get dynamic because of excess AOA
             ew_fbwa_backup();
-            Log_Write_EWNDI(aspeed);
+            Log_Write_EWNDI(-1, 0, Vector3f(0, 0, 0), aero_dot_des );
             return;
-        } // if(slow_dynamic_rate(..,..,..))
+        }
         
         // fast loop (5.2.3)
         Vector3f omega_dot_des, omega_dot_dym;
@@ -60,24 +63,24 @@ void Plane::ndi_ewing(float speed_scaler)
                 // (5.2.36)
                 actuator_command = g_fRinv*(omega_dot_des - omega_dot_dym);
             } else {
-                //fail to get inverse
+                //fail to get inverse of input matrix
                 ew_fbwa_backup();
-                Log_Write_EWNDI(aspeed);
+                Log_Write_EWNDI(1, -2, aero_dot_dym, omega_command);
                 return;
             }
         }else {
-            // fail to get dynamic
+            // fail to get dynamic because of excess AOA
             ew_fbwa_backup();
-            Log_Write_EWNDI(aspeed);
+            Log_Write_EWNDI(1, -1, aero_dot_dym, omega_command);
             return;
-        } // if(slow_dynamic_rate(..,..,..))
+        }
     ndi_set_servo(actuator_command);
-        
-    }else {                 // if((aero_available)&&(vel_available))
+    }else {
+        // if no aero & velocity available
        ew_fbwa_backup();
-       Log_Write_EWNDI(aspeed);
+       Log_Write_EWNDI(0, 0, Vector3f(0, 0, 0), Vector3f(0, 0, 0));
     }
-    Log_Write_EWAero(aspeed);
+    Log_Write_EWNDI(1, 1, aero_dot_dym, omega_command);
     return;
 }
 
@@ -138,6 +141,7 @@ void Plane::aero_desired_rate(float &a_dot_des, float &b_dot_des, float &m_dot_d
     _last_a_dot_des = a_dot_des;
     _last_b_dot_des = b_dot_des;
     _last_m_dot_des = m_dot_des;
+    Log_Write_EWAero(aspeed);
     return;
 }
 
