@@ -35,6 +35,11 @@ public:
     bool init_mode(void);
     bool setup(void);
     void setup_defaults(void);
+
+    void land_controller(void);
+    void setup_target_position(void);
+    void takeoff_controller(void);
+    void waypoint_controller(void);
     
     // update transition handling
     void update(void);
@@ -57,7 +62,7 @@ public:
     bool do_vtol_takeoff(const AP_Mission::Mission_Command& cmd);
     bool do_vtol_land(const AP_Mission::Mission_Command& cmd);
     bool verify_vtol_takeoff(const AP_Mission::Mission_Command &cmd);
-    bool verify_vtol_land(const AP_Mission::Mission_Command &cmd);
+    bool verify_vtol_land(void);
     bool in_vtol_auto(void);
     bool in_vtol_mode(void);
 
@@ -151,6 +156,9 @@ private:
     void control_loiter(void);
     void check_land_complete(void);
 
+    void init_qrtl(void);
+    void control_qrtl(void);
+    
     float assist_climb_rate_cms(void);
 
     // calculate desired yaw rate for assistance
@@ -182,12 +190,18 @@ private:
     // landing speed in cm/s
     AP_Int16 land_speed_cms;
 
+    // QRTL start altitude, meters
+    AP_Int16 qrtl_alt;
+    
     // alt to switch to QLAND_FINAL
     AP_Float land_final_alt;
     
     AP_Int8 enable;
     AP_Int8 transition_pitch_max;
 
+    // control if a VTOL RTL will be used
+    AP_Int8 rtl_mode;
+    
     struct {
         AP_Float gain;
         float integrator;
@@ -233,18 +247,20 @@ private:
     // time we last set the loiter target
     uint32_t last_loiter_ms;
 
-    enum {
+    enum land_state {
         QLAND_POSITION1,
         QLAND_POSITION2,
         QLAND_DESCEND,
         QLAND_FINAL,
         QLAND_COMPLETE
-    } land_state;
+    };
     struct {
-        int32_t yaw_cd;
+        enum land_state state;
         float speed_scale;
         Vector2f target_velocity;
         float max_speed;
+        Vector3f target;
+        bool slow_descent:1;
     } land;
 
     enum frame_class {

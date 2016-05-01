@@ -73,7 +73,8 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(update_mount,           50,    100),
     SCHED_TASK(update_trigger,         50,    100),
     SCHED_TASK(log_perf_info,         0.2,    100),
-    SCHED_TASK(compass_save,        0.016,    200),
+    SCHED_TASK(compass_save,          0.1,    200),
+    SCHED_TASK(Log_Write_Attitude,     25,    300),
     SCHED_TASK(update_logging1,        10,    300),
     SCHED_TASK(update_logging2,        10,    300),
     SCHED_TASK(parachute_check,        10,    200),
@@ -381,7 +382,12 @@ void Plane::log_perf_info()
 
 void Plane::compass_save()
 {
-    if (g.compass_enabled) {
+    if (g.compass_enabled &&
+        compass.get_learn_type() >= Compass::LEARN_INTERNAL &&
+        !hal.util->get_soft_armed()) {
+        /*
+          only save offsets when disarmed
+         */
         compass.save_offsets();
     }
 }
@@ -798,7 +804,8 @@ void Plane::update_flight_mode(void)
     case QSTABILIZE:
     case QHOVER:
     case QLOITER:
-    case QLAND: {
+    case QLAND:
+    case QRTL: {
         // set nav_roll and nav_pitch using sticks
         nav_roll_cd  = channel_roll->norm_input() * roll_limit_cd;
         nav_roll_cd = constrain_int32(nav_roll_cd, -roll_limit_cd, roll_limit_cd);
@@ -833,7 +840,11 @@ void Plane::update_navigation()
         break;
             
     case RTL:
-        if (g.rtl_autoland == 1 &&
+        if (quadplane.available() && quadplane.rtl_mode == 1 &&
+            nav_controller->reached_loiter_target()) {
+            set_mode(QRTL);
+            break;
+        } else if (g.rtl_autoland == 1 &&
             !auto_state.checked_for_autoland &&
             nav_controller->reached_loiter_target() && 
             labs(altitude_error_cm) < 1000) {
@@ -883,6 +894,7 @@ void Plane::update_navigation()
     case QHOVER:
     case QLOITER:
     case QLAND:
+    case QRTL:
         // nothing to do
         break;
     }
