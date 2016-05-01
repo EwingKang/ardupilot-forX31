@@ -907,8 +907,8 @@ void Plane::set_servos(void)
             channel_roll->radio_out                = channel_roll->read();
             channel_pitch->radio_out               = channel_pitch->read();
         }
-        channel_throttle->radio_out    = channel_throttle->radio_in;
-        channel_rudder->radio_out              = channel_rudder->radio_in;
+        channel_throttle->radio_out         = channel_throttle->radio_in;
+        channel_rudder->radio_out           = channel_rudder->radio_in;
 
         // setup extra channels. We want this to come from the
         // main input channel, but using the 2nd channels dead

@@ -229,7 +229,7 @@ void Plane::omega_desired_rate(const Vector3f &omega_c, Vector3f &omega_dot_des,
 bool Plane::fast_dynamic_rate(Vector3f &omega_dot_dym)
 {
     float ahrs_aoa = ToDeg(eular132.y);
-    float ahrs_beta = -ToDeg(eular132.z);
+    //float ahrs_beta = -ToDeg(eular132.z);
     float vel = vel_NED.length();
     float Q = 0.5*1.23*vel*vel;
     float b_div_2v = g.ndi_mw_b_ew/2/vel;
