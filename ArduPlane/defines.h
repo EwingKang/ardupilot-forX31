@@ -124,7 +124,9 @@ enum log_messages {
     LOG_PARAMTUNE_MSG,
     LOG_EWQ_MSG,    //EWING my logger define enum
     LOG_EWA_MSG, 
-    LOG_EWNDI_MSG
+    LOG_EWNDI_MSG, 
+    LOG_EWNDII_MSG, 
+    LOG_EWNDI_INIT
 };
 
 #define MASK_LOG_ATTITUDE_FAST          (1<<0)

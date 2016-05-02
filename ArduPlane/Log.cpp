@@ -649,9 +649,9 @@ const struct LogStructure Plane::log_structure[] = {
     { LOG_EWA_MSG, sizeof(log_ewing_aero),      
       "EWA", "QBffff", "TimeUS,haveAero,aeroVel,AOA,SS,MU" },           // EWING aero logging 
     { LOG_EWNDI_MSG, sizeof(log_ewing_ndi),      
-      "EWN", "Qbbffffff", "TimeUS,haveSL,haveFL,a_d_dm,b_d_dm,m_d_dm,wc_x,wc_y,wc_z" }, // EWING NDI logging 
+      "EWN", "Qbbffffff", "TimeUS,haveSL,haveFL,a_d_dm,b_d_dm,m_d_dm,wc_x,wc_y,wc_z" }, // EWING NDI logging
     { LOG_EWNDII_MSG, sizeof(log_ewing_ndi2),      
-      "EWN", "Qfff", "TimeUS,act_x,act_y,act_z" }, // EWING NDI 2 logging
+      "EWN2", "Qfff", "TimeUS,act_x,act_y,act_z" }, // EWING NDI 2 logging
     { LOG_EWNDI_INIT, sizeof(log_ew_ndi_init),
       "EWNI", "fffffffff", "invi11,invi12,invi13,invi21,invi22,invi23,invi31,invi32,invi33" }, // EWING NDI logging 
 #if OPTFLOW == ENABLED
