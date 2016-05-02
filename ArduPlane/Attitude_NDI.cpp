@@ -111,7 +111,7 @@ void Plane::aero_desired_rate(float &a_dot_des, float &b_dot_des, float &m_dot_d
     }else if (aspeed > g.ctrl_trans_ub_ew) {
         ndi_scaler = 1;
     }
-    ndi_scaler /= 1;
+    ndi_scaler = 1 / ndi_scaler;
         
     //only integrate if gain and time step are positive and airspeed above min value.
     if (delta_time > 0 && aspeed > g.ctrl_trans_lb_ew) {
@@ -218,7 +218,7 @@ void Plane::omega_desired_rate(const Vector3f &omega_c, Vector3f &omega_dot_des,
     }else if (aspeed > g.ctrl_trans_ub_ew) {
         ndi_scaler = 1;
     }
-    ndi_scaler /= 1;
+    ndi_scaler = 1 / ndi_scaler;
         
     
     
@@ -312,7 +312,9 @@ void Plane::ndi_set_servo(const Vector3f &actuator_cmd)
     
     channel_roll->servo_out  = ail_deg * 4500 / g.max_aileron_ang_ew;
     channel_pitch->servo_out = can_deg * 100;
-    channel_rudder->servo_out = rud_deg * 4500 / g.max_rudder_ang_ew;
+    //channel_rudder->servo_out = rud_deg * 4500 / g.max_rudder_ang_ew;
+    steering_control.rudder  = rud_deg * 4500 / g.max_rudder_ang_ew;
+    Log_Write_EWNDII(actuator_cmd);
     return;
 }
 
@@ -461,4 +463,5 @@ void Plane::ndi_calculate_inertia()
                           Vector3f(            0, g.ndi_iyy_ew,             0), 
                           Vector3f(-g.ndi_ixz_ew,            0,  g.ndi_izz_ew) );
     inverse3x3(&inertiaMat[0][0], &inertiaMatInv[0][0]);
+    Log_Write_EWNDIinit(inertiaMatInv);
 }

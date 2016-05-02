@@ -467,6 +467,58 @@ void Plane::Log_Write_EWNDI(const int8_t &haveSlowLoop, const int8_t &haveFastLo
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
 }
 
+// EWING my NDI logger
+struct PACKED log_ewing_ndi2 {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float ail_cmd;
+    float can_cmd;
+    float rud_cmd;
+};
+
+void Plane::Log_Write_EWNDII(const Vector3f &actuator_cmd)
+{
+    struct log_ewing_ndi2 pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_EWNDII_MSG)
+        ,time_us            : AP_HAL::micros64()
+        ,ail_cmd             : actuator_cmd.x
+        ,can_cmd             : actuator_cmd.y
+        ,rud_cmd             : actuator_cmd.z
+        };
+
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+// EWING my NDI logger
+struct PACKED log_ew_ndi_init {
+    LOG_PACKET_HEADER;
+    float invI11;
+    float invI12;
+    float invI13;
+    float invI21;
+    float invI22;
+    float invI23;
+    float invI31;
+    float invI32;
+    float invI33;
+};
+
+void Plane::Log_Write_EWNDIinit(const Matrix3f &invInertia)
+{
+    struct log_ew_ndi_init pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_EWNDI_INIT)
+        ,invI11     : invInertia[0][0]
+        ,invI12     : invInertia[0][1]
+        ,invI13     : invInertia[0][2]
+        ,invI21     : invInertia[1][0]
+        ,invI22     : invInertia[1][1]
+        ,invI23     : invInertia[1][2]
+        ,invI31     : invInertia[2][0]
+        ,invI32     : invInertia[2][1]
+        ,invI33     : invInertia[2][2]
+        };
+    DataFlash.WriteBlock(&pkt, sizeof(pkt));
+}
+
 struct PACKED log_Optflow {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -598,6 +650,10 @@ const struct LogStructure Plane::log_structure[] = {
       "EWA", "QBffff", "TimeUS,haveAero,aeroVel,AOA,SS,MU" },           // EWING aero logging 
     { LOG_EWNDI_MSG, sizeof(log_ewing_ndi),      
       "EWN", "Qbbffffff", "TimeUS,haveSL,haveFL,a_d_dm,b_d_dm,m_d_dm,wc_x,wc_y,wc_z" }, // EWING NDI logging 
+    { LOG_EWNDII_MSG, sizeof(log_ewing_ndi2),      
+      "EWN", "Qfff", "TimeUS,act_x,act_y,act_z" }, // EWING NDI 2 logging
+    { LOG_EWNDI_INIT, sizeof(log_ew_ndi_init),
+      "EWNI", "fffffffff", "invi11,invi12,invi13,invi21,invi22,invi23,invi31,invi32,invi33" }, // EWING NDI logging 
 #if OPTFLOW == ENABLED
     { LOG_OPTFLOW_MSG, sizeof(log_Optflow),
       "OF",   "QBffff",   "TimeUS,Qual,flowX,flowY,bodyX,bodyY" },
