@@ -1017,6 +1017,25 @@ const AP_Param::Info Plane::var_info[] = {
     // @User: Standard
     GSCALAR(ndi_ki_r_ew,        "NDI_KI_R_EW",       NDI_KI_R_EW),
     
+    // @Param: NDI_SL_SPDBUF_EW
+    // @DisplayName: EWING NDI low speed buffer scaller for slow loop.
+    // @Description: A scaller to slow the slow-dynamic command of vehicle when Q is small to prevent easy saturation. Scalling is done according to ctrl_trans_lb_ew and ctrl_trans_ub_ew
+    // @Units: 
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_sl_lospd_bffr_ew,        "NDI_SL_SPDBUF_EW",       NDI_SL_SPDBUF_EW),
+    
+    // @Param: NDI_FL_SPDBUF_EW
+    // @DisplayName: EWING NDI low speed buffer scaller for fast loop.
+    // @Description: A scaller to slow the fast-dynamic command of vehicle when Q is small to prevent easy saturation. Scalling is done according to ctrl_trans_lb_ew and ctrl_trans_ub_ew
+    // @Units: 
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_fl_lospd_bffr_ew,        "NDI_FL_SPDBUF_EW",       NDI_FL_SPDBUF_EW),
+    
+    
     // @Param: NDI_IXX_EW
     // @DisplayName: EWING NDI Momoent of Inertia XX
     // @Description: NDI Momoent of Inertia XX

@@ -103,11 +103,21 @@ void Plane::aero_desired_rate(float &a_dot_des, float &b_dot_des, float &m_dot_d
     }
     
     float aspeed = vel_NED.length();
+    
+    // ndi_scaler, the higher the speed, the closer the scaler become 1
+    float ndi_scaler = 1 + (g.ndi_sl_lospd_bffr_ew - 1) * ((g.ctrl_trans_ub_ew - aspeed)/(g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew));
+    if (aspeed < g.ctrl_trans_lb_ew) {
+        ndi_scaler = g.ndi_sl_lospd_bffr_ew;
+    }else if (aspeed > g.ctrl_trans_ub_ew) {
+        ndi_scaler = 1;
+    }
+    ndi_scaler /= 1;
+        
     //only integrate if gain and time step are positive and airspeed above min value.
     if (delta_time > 0 && aspeed > g.ctrl_trans_lb_ew) {
-        float alpha_intg_delta = aoa_err * g.ndi_ki_aoa_ew * delta_time;
-        float beta_intg_delta = beta_err * g.ndi_ki_ss_ew * delta_time;
-        float mu_intg_delta =  mu_err * g.ndi_ki_mu_ew * delta_time;
+        float alpha_intg_delta = aoa_err * g.ndi_ki_aoa_ew * ndi_scaler * delta_time;
+        float beta_intg_delta = beta_err * g.ndi_ki_ss_ew * ndi_scaler * delta_time;
+        float mu_intg_delta =  mu_err * g.ndi_ki_mu_ew * ndi_scaler * delta_time;
         
         // prevent the integrator from increasing if surface defln demand is above the upper limit
         // prevent the integrator from decreasing if surface defln demand  is below the lower limit
@@ -135,9 +145,9 @@ void Plane::aero_desired_rate(float &a_dot_des, float &b_dot_des, float &m_dot_d
         beta_integrator = 0;
         mu_integrator = 0;
     }
-    a_dot_des = aoa_err * g.ndi_kp_aoa_ew + alpha_integrator;
-    b_dot_des = beta_err * g.ndi_kp_ss_ew + alpha_integrator;
-    m_dot_des = mu_err * g.ndi_kp_mu_ew + alpha_integrator;
+    a_dot_des = aoa_err * g.ndi_kp_aoa_ew * ndi_scaler + alpha_integrator;
+    b_dot_des = beta_err * g.ndi_kp_ss_ew * ndi_scaler + beta_integrator;
+    m_dot_des = mu_err * g.ndi_kp_mu_ew * ndi_scaler + mu_integrator;
     _last_a_dot_des = a_dot_des;
     _last_b_dot_des = b_dot_des;
     _last_m_dot_des = m_dot_des;
@@ -200,17 +210,29 @@ void Plane::omega_desired_rate(const Vector3f &omega_c, Vector3f &omega_dot_des,
     }
     
     float aspeed = vel_NED.length();
+    
+    // ndi_scaler, the higher the speed, the closer the scaler become 1
+    float ndi_scaler = 1 + (g.ndi_fl_lospd_bffr_ew - 1) * ((g.ctrl_trans_ub_ew - aspeed)/(g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew));
+    if (aspeed < g.ctrl_trans_lb_ew) {
+        ndi_scaler = g.ndi_fl_lospd_bffr_ew;
+    }else if (aspeed > g.ctrl_trans_ub_ew) {
+        ndi_scaler = 1;
+    }
+    ndi_scaler /= 1;
+        
+    
+    
     //only integrate if gain and time step are positive and airspeed above min value.
     if (delta_time > 0 && aspeed > g.ctrl_trans_lb_ew) {
         
-        Vector3f omega_intg_delta = (omega_gain_ki * omega_err) * delta_time;
+        Vector3f omega_intg_delta = (omega_gain_ki * omega_err) * ndi_scaler * delta_time;
                 
         // prevent the integrator from increasing if surface defln demand is above the upper limit
         // prevent the integrator from decreasing if surface defln demand  is below the lower limit
         for(int i=0;i<3;i++) {
-            if (_last_omega_dot_des[i] < -40) {
+            if (_last_omega_dot_des[i] < -10) {
                   omega_intg_delta[i] = MAX(omega_intg_delta[i] , 0);
-            } else if (_last_omega_dot_des[i] > 40) {
+            } else if (_last_omega_dot_des[i] > 10) {
                 omega_intg_delta[i] = MIN(omega_intg_delta[i] , 0);
             }
         }
@@ -220,7 +242,7 @@ void Plane::omega_desired_rate(const Vector3f &omega_c, Vector3f &omega_dot_des,
         omega_integrator.zero();
     }
     
-    omega_dot_des = (omega_gain_kp * omega_err) + omega_integrator;
+    omega_dot_des = (omega_gain_kp * omega_err) * ndi_scaler + omega_integrator;
     
     _last_omega_dot_des = omega_dot_des;
     return;
@@ -280,7 +302,7 @@ void Plane::ndi_set_servo(const Vector3f &actuator_cmd)
     float can_deg = constrain_float( (actuator_cmd.y + aero_coef(2102, ToDeg(eular132.y))),
                                                                   g.min_canard_ang_ew, 
                                                                   g.max_canard_ang_ew );
-    float rud_deg = constrain_float(actuator_cmd.x, -g.max_rudder_ang_ew, g.max_rudder_ang_ew);
+    float rud_deg = constrain_float(actuator_cmd.z, -g.max_rudder_ang_ew, g.max_rudder_ang_ew);
     
     if(can_deg>0) {
         can_deg = can_deg * 45 / g.max_canard_ang_ew;

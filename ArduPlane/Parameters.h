@@ -377,6 +377,8 @@ public:
         k_param_ndi_ki_p_ew,
         k_param_ndi_ki_q_ew,
         k_param_ndi_ki_r_ew, 
+        k_param_ndi_sl_lospd_bffr_ew,
+        k_param_ndi_fl_lospd_bffr_ew,
         k_param_ndi_ixx_ew,
         k_param_ndi_iyy_ew,
         k_param_ndi_izz_ew,
@@ -593,6 +595,8 @@ public:
     AP_Float ndi_ki_p_ew;
     AP_Float ndi_ki_q_ew;
     AP_Float ndi_ki_r_ew;
+    AP_Float ndi_sl_lospd_bffr_ew;
+    AP_Float ndi_fl_lospd_bffr_ew;
     AP_Float ndi_ixx_ew;
     AP_Float ndi_iyy_ew;
     AP_Float ndi_izz_ew;

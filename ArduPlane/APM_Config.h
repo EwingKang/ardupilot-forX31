@@ -40,6 +40,8 @@
 #define     NDI_KI_P_EW         0.5
 #define     NDI_KI_Q_EW         0.5
 #define     NDI_KI_R_EW         0.5
+#define     NDI_SL_SPDBUF_EW    5
+#define     NDI_FL_SPDBUF_EW    5
 #define     NDI_IXX_EW          0.029
 #define     NDI_IYY_EW          0.246
 #define     NDI_IZZ_EW          0.227
