@@ -17,8 +17,8 @@
 #define     K_MU_TO_RATE_EW     1.5
 #define     AOA_TRIM_CD_EW      500
 #define     BETA_TRIM_CD_EW     0
-#define     CTRL_TRANS_UB_EW    5
-#define     CTRL_TRANS_LB_EW    3
+#define     CTRL_TRANS_UB_EW    15
+#define     CTRL_TRANS_LB_EW    4
 #define     MAX_THRUST_EW       2*9.81
 #define     MAX_AILE_ANG_EW     30
 #define     MAX_CNRD_ANG_EW     90
