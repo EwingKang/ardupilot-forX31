@@ -162,7 +162,9 @@ bool Plane::slow_dynamic_rate(float &alpha_dot_dym, float &beta_dot_dym, float &
     //float ahrs_mu = ToDeg(eular132.x);
     float ahrs_beta = -ToDeg(eular132.z);
     
-    if( ((ahrs_aoa > 85)&&(ahrs_aoa<-80)) || (fabsf(ahrs_beta)>80) ) {
+    if( ( (ahrs_aoa > 85)&&(ahrs_aoa<-80) )         || 
+        ( fabsf(ahrs_beta) > 80 )                   || 
+        ( vel_NED.length() < g.ctrl_trans_lb_ew/2 )   ) {
         return false;
     }
     
@@ -189,6 +191,8 @@ bool Plane::slow_dynamic_rate(float &alpha_dot_dym, float &beta_dot_dym, float &
     float eq5310c = tanf(vel_gamma) * (sinf(eular132.x)*sinf(eular132.y) - cosf(eular132.x)*cosf(eular132.y)*sinf(-eular132.z))
                     + tanf(-eular132.z)*sinf(eular132.y);
     mu_dot_dym = (eq5310a + eq5310b + eq5310c * thrust) / (g.ndi_mass_ew * vel_NED.length());
+    
+
     return true;
 }
 
