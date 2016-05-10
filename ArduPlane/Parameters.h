@@ -386,7 +386,12 @@ public:
         k_param_ndi_mass_ew,
         k_param_ndi_mw_b_ew,
         k_param_ndi_mw_c_ew,
-        k_param_ndi_mw_S_ew
+        k_param_ndi_mw_S_ew,
+        k_param_ndi_air_density_ew,
+        k_param_ndi_sl_haoa_bffr_ew,
+        k_param_ndi_fl_haoa_bffr_ew,
+        k_param_ndi_aoa_bffr_ub_ew,
+        k_param_ndi_aoa_bffr_lb_ew
     };
 
     AP_Int16 format_version;
@@ -605,6 +610,11 @@ public:
     AP_Float ndi_mw_b_ew;
     AP_Float ndi_mw_c_ew;
     AP_Float ndi_mw_S_ew;
+    AP_Float ndi_air_density_ew;
+    AP_Float ndi_sl_haoa_bffr_ew;
+    AP_Float ndi_fl_haoa_bffr_ew;
+    AP_Float ndi_aoa_bffr_ub_ew;
+    AP_Float ndi_aoa_bffr_lb_ew;
 
     // RC channels
     RC_Channel rc_1;

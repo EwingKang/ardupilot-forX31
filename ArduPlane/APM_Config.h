@@ -30,10 +30,10 @@
 //NDI, value is incorrect
 #define     NDI_KP_AOA_EW       1
 #define     NDI_KP_MU_EW        1
-#define     NDI_KP_SS_EW        1
+#define     NDI_KP_SS_EW        0.8
 #define     NDI_KP_P_EW         5
 #define     NDI_KP_Q_EW         5
-#define     NDI_KP_R_EW         5
+#define     NDI_KP_R_EW         4
 #define     NDI_KI_AOA_EW       0.05
 #define     NDI_KI_MU_EW        0.05
 #define     NDI_KI_SS_EW        0.02
@@ -50,3 +50,8 @@
 #define     NDI_MW_B_EW         1
 #define     NDI_MW_C_EW         0.23
 #define     NDI_MW_S_EW         0.3357
+#define     NDI_AIR_DNSTY_EW    1.15
+#define     NDI_SL_AOABFR_EW    2.5
+#define     NDI_FL_AOABFR_EW    2
+#define     NDI_AOABFR_UB_EW    50
+#define     NDI_AOABFR_LB_EW    30

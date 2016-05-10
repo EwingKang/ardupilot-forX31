@@ -1021,7 +1021,7 @@ const AP_Param::Info Plane::var_info[] = {
     // @DisplayName: EWING NDI low speed buffer scaller for slow loop.
     // @Description: A scaller to slow the slow-dynamic command of vehicle when Q is small to prevent easy saturation. Scalling is done according to ctrl_trans_lb_ew and ctrl_trans_ub_ew
     // @Units: 
-    // @Range: 0 10
+    // @Range: 0 20
     // @Increment: 0.01
     // @User: Standard
     GSCALAR(ndi_sl_lospd_bffr_ew,        "NDI_SL_SPDBUF_EW",       NDI_SL_SPDBUF_EW),
@@ -1030,7 +1030,7 @@ const AP_Param::Info Plane::var_info[] = {
     // @DisplayName: EWING NDI low speed buffer scaller for fast loop.
     // @Description: A scaller to slow the fast-dynamic command of vehicle when Q is small to prevent easy saturation. Scalling is done according to ctrl_trans_lb_ew and ctrl_trans_ub_ew
     // @Units: 
-    // @Range: 0 10
+    // @Range: 0 20
     // @Increment: 0.01
     // @User: Standard
     GSCALAR(ndi_fl_lospd_bffr_ew,        "NDI_FL_SPDBUF_EW",       NDI_FL_SPDBUF_EW),
@@ -1107,6 +1107,51 @@ const AP_Param::Info Plane::var_info[] = {
     // @Increment: 0.01
     // @User: Standard
     GSCALAR(ndi_mw_S_ew,        "NDI_MW_S_EW",       NDI_MW_S_EW),
+    
+    // @Param: NDI_AIR_DNSTY_EW
+    // @DisplayName: EWING NDI Air density
+    // @Description:  density of the air
+    // @Units: kg/m^3
+    // @Range: 0.7 1.5
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_air_density_ew,     "NDI_AIR_DNSTY_EW",       NDI_AIR_DNSTY_EW),
+    
+    // @Param: NDI_SL_AOABFR_EW
+    // @DisplayName: EWING NDI High AOA buffer scalar for slow loop.
+    // @Description: A scalar to slow the slow-dynamic command of vehicle when AOA is high to improve stability. Scalling is done according to NDI_AOABFR_UB_EW and NDI_AOABFR_LB_EW
+    // @Units: 
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_sl_haoa_bffr_ew,    "NDI_SL_AOABFR_EW",       NDI_SL_AOABFR_EW),
+    
+    // @Param: NDI_FL_AOABFR_EW
+    // @DisplayName: EWING NDI High AOA buffer scalar for fast loop.
+    // @Description: A scalar to slow the fast-dynamic command of vehicle when AOA is high to improve stability. Scalling is done according to NDI_AOABFR_UB_EW and NDI_AOABFR_LB_EW
+    // @Units: 
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_fl_haoa_bffr_ew,    "NDI_FL_AOABFR_EW",       NDI_FL_AOABFR_EW),
+    
+    // @Param: NDI_AOABFR_UB_EW
+    // @DisplayName: EWING NDI High AOA buffer scalar transition upper bound
+    // @Description: The AOA angle which command bandwidth is fully slow downed by 1/NDI_AOABFR_EW
+    // @Units: degrees
+    // @Range: 10 90
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_aoa_bffr_ub_ew,     "NDI_AOABFR_UB_EW",       NDI_AOABFR_UB_EW),
+    
+    // @Param: NDI_AOABFR_LB_EW
+    // @DisplayName: EWING NDI High AOA buffer scalar transition upper bound
+    // @Description: The AOA angle which command bandwidth starts slowing downed by 1/NDI_AOABFR_EW
+    // @Units: degrees
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_aoa_bffr_lb_ew,     "NDI_AOABFR_LB_EW",       NDI_AOABFR_LB_EW),
     
     // @Param: ACRO_LOCKING
     // @DisplayName: ACRO mode attitude locking

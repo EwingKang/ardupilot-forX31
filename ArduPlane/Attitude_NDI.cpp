@@ -111,6 +111,17 @@ void Plane::aero_desired_rate(float &a_dot_des, float &b_dot_des, float &m_dot_d
     }else if (aspeed > g.ctrl_trans_ub_ew) {
         ndi_scaler = 1;
     }
+    // AOA scaler, the higher the AOA is, the higher the scaler becomes
+    if(ahrs_aoa > 0) {
+        if(ahrs_aoa <  g.ndi_aoa_bffr_lb_ew) {
+            //ndi_scaler = ndi_scaler*1;  // nothing happened
+        }else if(ahrs_aoa < g.ndi_aoa_bffr_ub_ew){
+            ndi_scaler *= ( 1 + (g.ndi_sl_haoa_bffr_ew - 1)*(ahrs_aoa - g.ndi_aoa_bffr_lb_ew)/(g.ndi_aoa_bffr_ub_ew - g.ndi_aoa_bffr_lb_ew) );
+        }else{
+            ndi_scaler *= g.ndi_sl_haoa_bffr_ew;
+        }
+    }
+    
     ndi_scaler = 1 / ndi_scaler;
         
     //only integrate if gain and time step are positive and airspeed above min value.
@@ -168,7 +179,7 @@ bool Plane::slow_dynamic_rate(float &alpha_dot_dym, float &beta_dot_dym, float &
         return false;
     }
     
-    float Q = 0.5*1.23*vel_NED.length()*vel_NED.length();
+    float Q = 0.5*g.ndi_air_density_ew*vel_NED.length()*vel_NED.length();
     float thrust = channel_throttle->norm_input() * g.max_thrust_ew;
     float lift = Q * g.ndi_mw_S_ew * aero_coef(211, ahrs_aoa);
     float side_force = Q * g.ndi_mw_S_ew * aero_coef(231, ahrs_aoa) * (-eular132.z);
@@ -198,6 +209,7 @@ bool Plane::slow_dynamic_rate(float &alpha_dot_dym, float &beta_dot_dym, float &
 
 void Plane::omega_desired_rate(const Vector3f &omega_c, Vector3f &omega_dot_des, const float &delta_time, const bool &reset_i)
 {
+    float ahrs_aoa = ToDeg(eular132.y);
     // (5.2.3)
     Vector3f omega_err(omega_c - ahrs.get_gyro());          // return in radians/s
     Matrix3f omega_gain_kp(Vector3f(g.ndi_kp_p_ew, 0, 0),
@@ -221,6 +233,16 @@ void Plane::omega_desired_rate(const Vector3f &omega_c, Vector3f &omega_dot_des,
         ndi_scaler = g.ndi_fl_lospd_bffr_ew;
     }else if (aspeed > g.ctrl_trans_ub_ew) {
         ndi_scaler = 1;
+    }
+    // AOA scaler, the higher the AOA is, the higher the scaler becomes
+    if(ahrs_aoa > 0) {
+        if(ahrs_aoa <  g.ndi_aoa_bffr_lb_ew) {
+            //ndi_scaler = ndi_scaler*1;  // nothing happened
+        }else if(ahrs_aoa < g.ndi_aoa_bffr_ub_ew){
+            ndi_scaler *= ( 1 + (g.ndi_fl_haoa_bffr_ew - 1)*(ahrs_aoa - g.ndi_aoa_bffr_lb_ew)/(g.ndi_aoa_bffr_ub_ew - g.ndi_aoa_bffr_lb_ew) );
+        }else{
+            ndi_scaler *= g.ndi_fl_haoa_bffr_ew;
+        }
     }
     ndi_scaler = 1 / ndi_scaler;
         
@@ -257,7 +279,7 @@ bool Plane::fast_dynamic_rate(Vector3f &omega_dot_dym)
     float ahrs_aoa = ToDeg(eular132.y);
     //float ahrs_beta = -ToDeg(eular132.z);
     float vel = vel_NED.length();
-    float Q = 0.5*1.23*vel*vel;
+    float Q = 0.5*g.ndi_air_density_ew*vel*vel;
     float b_div_2v = g.ndi_mw_b_ew/2/vel;
     
     float p = ahrs.get_gyro().x;
