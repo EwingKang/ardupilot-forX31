@@ -704,7 +704,7 @@ void Plane::update_flight_mode(void)
         if (failsafe.ch3_failsafe && g.short_fs_action == 2) {
             ew_MU_cd = 0;
             ew_AOA_cd = 500;        // 5 degree
-            channel_throttle->servo_out = 0;
+            channel_throttle->set_servo_out(0);
             // FBWA failsafe
             nav_roll_cd = 0;
             nav_pitch_cd = 0;
@@ -735,7 +735,7 @@ void Plane::update_flight_mode(void)
         if (failsafe.ch3_failsafe && g.short_fs_action == 2) {
             ew_MU_cd = 0;
             ew_AOA_cd = 500;        // 5 degree
-            channel_throttle->servo_out = 0;
+            channel_throttle->set_servo_out(0);
             // FBWA failsafe
             nav_roll_cd = 0;
             nav_pitch_cd = 0;

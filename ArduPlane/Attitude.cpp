@@ -396,11 +396,11 @@ void Plane::fly_by_wire_ewing(float speed_scaler)
         Vspeed = vel_NED.length();
         float ctrl_trans_intvl = (g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew);
         if( Vspeed < g.ctrl_trans_lb_ew ) {  
-            svo_canard = pitchController.get_servo_out(ew_AOA_cd + g.pitch_trim_cd + channel_throttle->servo_out * g.kff_throttle_to_pitch - ahrs.pitch_sensor, 
+            svo_canard = pitchController.get_servo_out(ew_AOA_cd + g.pitch_trim_cd + channel_throttle->get_servo_out() * g.kff_throttle_to_pitch - ahrs.pitch_sensor, 
                                                         speed_scaler,  false);
             svo_aileron = rollController.get_servo_out(ew_MU_cd - ahrs.roll_sensor, speed_scaler, false);
         } else if(Vspeed <= g.ctrl_trans_ub_ew) {
-            int32_t demanded_pitch = ew_AOA_cd + g.pitch_trim_cd + channel_throttle->servo_out * g.kff_throttle_to_pitch;
+            int32_t demanded_pitch = ew_AOA_cd + g.pitch_trim_cd + channel_throttle->get_servo_out() * g.kff_throttle_to_pitch;
             float pitch_command, roll_command;
             // normal FBWA command output
             pitch_command = pitchController.get_servo_out(demanded_pitch - ahrs.pitch_sensor, speed_scaler,  false);
@@ -931,13 +931,8 @@ void Plane::set_servos(void)
             channel_roll->set_radio_out(channel_roll->read());
             channel_pitch->set_radio_out(channel_pitch->read());
         }
-<<<<<<< HEAD
-        channel_throttle->radio_out         = channel_throttle->radio_in;
-        channel_rudder->radio_out           = channel_rudder->radio_in;
-=======
         channel_throttle->set_radio_out(channel_throttle->get_radio_in());
         channel_rudder->set_radio_out(channel_rudder->get_radio_in());
->>>>>>> upstream/master
 
         // setup extra channels. We want this to come from the
         // main input channel, but using the 2nd channels dead
@@ -1101,14 +1096,9 @@ void Plane::set_servos(void)
                     control_mode == NDI_EW ||
                     control_mode == AUTOTUNE)) {
             // manual pass through of throttle while in FBWA or
-<<<<<<< HEAD
-            // STABILIZE mode with THR_PASS_STAB set 
-            // also pass through EWING
-            channel_throttle->radio_out = channel_throttle->radio_in;
-=======
             // STABILIZE mode with THR_PASS_STAB set
+            // also pass through EWING
             channel_throttle->set_radio_out(channel_throttle->get_radio_in());
->>>>>>> upstream/master
         } else if (control_mode == GUIDED && 
                    guided_throttle_passthru) {
             // manual pass through of throttle while in GUIDED
