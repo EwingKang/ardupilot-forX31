@@ -1,6 +1,7 @@
 // -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
 #include "Plane.h"
+#include "version.h"
 
 #if LOGGING_ENABLED == ENABLED
 
@@ -259,8 +260,8 @@ void Plane::Log_Write_Control_Tuning()
         roll            : (int16_t)ahrs.roll_sensor,
         nav_pitch_cd    : (int16_t)nav_pitch_cd,
         pitch           : (int16_t)ahrs.pitch_sensor,
-        throttle_out    : (int16_t)channel_throttle->servo_out,
-        rudder_out      : (int16_t)channel_rudder->servo_out,
+        throttle_out    : (int16_t)channel_throttle->get_servo_out(),
+        rudder_out      : (int16_t)channel_rudder->get_servo_out(),
         throttle_dem    : (int16_t)SpdHgt_Controller->get_throttle_demand()
     };
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -561,7 +562,7 @@ struct PACKED log_Arm_Disarm {
 
 void Plane::Log_Write_Current()
 {
-    DataFlash.Log_Write_Current(battery, channel_throttle->control_in);
+    DataFlash.Log_Write_Current(battery, channel_throttle->get_control_in());
 
     // also write power status
     DataFlash.Log_Write_Power();
@@ -579,7 +580,9 @@ void Plane::Log_Arm_Disarm() {
 
 void Plane::Log_Write_GPS(uint8_t instance)
 {
-    DataFlash.Log_Write_GPS(gps, instance, current_loc.alt - ahrs.get_home().alt);
+    if (!ahrs.have_ekf_logging()) {
+        DataFlash.Log_Write_GPS(gps, instance);
+    }
 }
 
 void Plane::Log_Write_IMU() 
@@ -598,7 +601,9 @@ void Plane::Log_Write_RC(void)
 
 void Plane::Log_Write_Baro(void)
 {
-    DataFlash.Log_Write_Baro(barometer);
+    if (!ahrs.have_ekf_logging()) {
+        DataFlash.Log_Write_Baro(barometer);
+    }
 }
 
 // Write a AIRSPEED packet
@@ -658,8 +663,6 @@ const struct LogStructure Plane::log_structure[] = {
     { LOG_OPTFLOW_MSG, sizeof(log_Optflow),
       "OF",   "QBffff",   "TimeUS,Qual,flowX,flowY,bodyX,bodyY" },
 #endif
-    { LOG_PARAMTUNE_MSG, sizeof(Tuning::log_ParameterTuning),
-      "PTUN", "QBfff",          "TimeUS,Param,TunVal,TunLo,TunHi" },  
     TECS_LOG_FORMAT(LOG_TECS_MSG)
 };
 

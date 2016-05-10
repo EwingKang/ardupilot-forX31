@@ -336,8 +336,8 @@ void Plane::ndi_set_servo(const Vector3f &actuator_cmd)
         can_deg = can_deg * -45 / g.min_canard_ang_ew;
     }
     
-    channel_roll->servo_out  = ail_deg * 4500 / g.max_aileron_ang_ew;
-    channel_pitch->servo_out = can_deg * 100;
+    channel_roll->set_servo_out(ail_deg * 4500 / g.max_aileron_ang_ew);
+    channel_pitch->set_servo_out(can_deg * 100);
     //channel_rudder->servo_out = rud_deg * 4500 / g.max_rudder_ang_ew;
     steering_control.rudder  = rud_deg * 4500 / g.max_rudder_ang_ew;
     Log_Write_EWNDII(actuator_cmd);

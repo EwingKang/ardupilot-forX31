@@ -5,7 +5,6 @@
 #include <AP_Param/AP_Param.h>
 #include <Filter/Filter.h>
 #include <Filter/DerivativeFilter.h>
-#include <AP_Buffer/AP_Buffer.h>
 
 // maximum number of sensor instances
 #define BARO_MAX_INSTANCES 3
@@ -105,13 +104,20 @@ public:
     // HIL (and SITL) interface, setting altitude
     void setHIL(float altitude_msl);
 
-    // HIL (and SITL) interface, setting pressure and temperature
-    void setHIL(uint8_t instance, float pressure, float temperature);
+    // HIL (and SITL) interface, setting pressure, temperature, altitude and climb_rate
+    // used by Replay
+    void setHIL(uint8_t instance, float pressure, float temperature, float altitude, float climb_rate, uint32_t last_update_ms);
 
     // HIL variables
     struct {
-        AP_Buffer<float,10> press_buffer;
-        AP_Buffer<float,10> temp_buffer;
+        float pressure;
+        float temperature;
+        float altitude;
+        float climb_rate;
+        uint32_t last_update_ms;
+        bool updated:1;
+        bool have_alt:1;
+        bool have_last_update:1;
     } _hil;
 
     // register a new sensor, claiming a sensor slot. If we are out of
