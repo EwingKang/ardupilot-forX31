@@ -46,7 +46,7 @@ RC_Channel_aux::output_ch(void)
 }
 
 /*
-  call output_ch() on all auxillary channels
+  call output_ch() on all auxiliary channels
  */
 void
 RC_Channel_aux::output_ch_all(void)
@@ -59,9 +59,9 @@ RC_Channel_aux::output_ch_all(void)
 }
 
 /*
-  prevent a channel from being used for auxillary functions
+  prevent a channel from being used for auxiliary functions
   This is used by the copter code to ensure channels used for motors
-  can't be used for auxillary functions
+  can't be used for auxiliary functions
 */
 void RC_Channel_aux::disable_aux_channel(uint8_t channel)
 {
@@ -113,6 +113,10 @@ void RC_Channel_aux::aux_servo_function_setup(void)
     case RC_Channel_aux::k_flaperon1:
     case RC_Channel_aux::k_flaperon2:
         set_angle_out(4500);
+        break;
+    case RC_Channel_aux::k_motor_tilt:
+        // tenth percentage tilt
+        set_range_out(0,1000);
         break;
     default:
         break;
@@ -404,7 +408,7 @@ RC_Channel_aux::move_servo(RC_Channel_aux::Aux_servo_function_t function,
 }
 
 /*
-  set the default channel an auxillary output function should be on
+  set the default channel an auxiliary output function should be on
  */
 bool RC_Channel_aux::set_aux_channel_default(RC_Channel_aux::Aux_servo_function_t function, uint8_t channel)
 {

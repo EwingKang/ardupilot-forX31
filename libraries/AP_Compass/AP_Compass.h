@@ -23,6 +23,7 @@
 #define AP_COMPASS_TYPE_AK8963_MPU9250  0x06
 #define AP_COMPASS_TYPE_AK8963_I2C      0x07
 #define AP_COMPASS_TYPE_LSM303D         0x08
+#define AP_COMPASS_TYPE_LSM9DS1         0x09
 
 // motor compensation types (for use with motor_comp_enabled)
 #define AP_COMPASS_MOT_COMP_DISABLED    0x00
@@ -312,7 +313,7 @@ private:
     uint8_t register_compass(void);
 
     // load backend drivers
-    void _add_backend(AP_Compass_Backend *backend);
+    bool _add_backend(AP_Compass_Backend *backend, const char *name, bool external);
     void _detect_backends(void);
 
     //keep track of number of calibration reports sent

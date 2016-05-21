@@ -167,7 +167,7 @@ void Plane::init_ardupilot()
     if (g.compass_enabled==true) {
         bool compass_ok = compass.init() && compass.read();
 #if HIL_SUPPORT
-    if (!is_zero(g.hil_mode)) {
+    if (g.hil_mode != 0) {
         compass_ok = true;
     }
 #endif
@@ -384,6 +384,7 @@ void Plane::set_mode(enum FlightMode mode)
 
     // assume non-VTOL mode
     auto_state.vtol_mode = false;
+    auto_state.vtol_loiter = false;
     
     switch(control_mode)
     {
@@ -796,7 +797,7 @@ void Plane::frsky_telemetry_send(void)
  */
 int8_t Plane::throttle_percentage(void)
 {
-    if (auto_state.vtol_mode) {
+    if (quadplane.in_vtol_mode()) {
         return quadplane.throttle_percentage();
     }
     // to get the real throttle we need to use norm_output() which

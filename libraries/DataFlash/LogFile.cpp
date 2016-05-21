@@ -229,7 +229,7 @@ bool DataFlash_Block::check_wrapped(void)
         return 1;
 }
 
-// This funciton finds the last log number
+// This function finds the last log number
 uint16_t DataFlash_Block::find_last_log(void)
 {
     uint16_t last_page = find_last_page();
@@ -731,7 +731,7 @@ void DataFlash_Class::Log_Write_GPS(const AP_GPS &gps, uint8_t i, uint64_t time_
     };
     WriteBlock(&pkt, sizeof(pkt));
 
-    /* write auxillary accuracy information as well */
+    /* write auxiliary accuracy information as well */
     float hacc = 0, vacc = 0, sacc = 0;
     gps.horizontal_accuracy(i, hacc);
     gps.vertical_accuracy(i, vacc);
@@ -826,14 +826,17 @@ void DataFlash_Class::Log_Write_Baro(AP_Baro &baro, uint64_t time_us)
     if (time_us == 0) {
         time_us = AP_HAL::micros64();
     }
+    float climbrate = baro.get_climb_rate();
+    float drift_offset = baro.get_baro_drift_offset();
     struct log_BARO pkt = {
         LOG_PACKET_HEADER_INIT(LOG_BARO_MSG),
         time_us       : time_us,
         altitude      : baro.get_altitude(0),
         pressure      : baro.get_pressure(0),
         temperature   : (int16_t)(baro.get_temperature(0) * 100 + 0.5f),
-        climbrate     : baro.get_climb_rate(),
-        sample_time_ms: baro.get_last_update(0)
+        climbrate     : climbrate,
+        sample_time_ms: baro.get_last_update(0),
+        drift_offset  : drift_offset,
     };
     WriteBlock(&pkt, sizeof(pkt));
 
@@ -844,8 +847,9 @@ void DataFlash_Class::Log_Write_Baro(AP_Baro &baro, uint64_t time_us)
             altitude      : baro.get_altitude(1),
             pressure	  : baro.get_pressure(1),
             temperature   : (int16_t)(baro.get_temperature(1) * 100 + 0.5f),
-            climbrate     : baro.get_climb_rate(),
-            sample_time_ms: baro.get_last_update(1)
+            climbrate     : climbrate,
+            sample_time_ms: baro.get_last_update(1),
+            drift_offset  : drift_offset,
         };
         WriteBlock(&pkt2, sizeof(pkt2));        
     }
@@ -857,8 +861,9 @@ void DataFlash_Class::Log_Write_Baro(AP_Baro &baro, uint64_t time_us)
             altitude      : baro.get_altitude(2),
             pressure	  : baro.get_pressure(2),
             temperature   : (int16_t)(baro.get_temperature(2) * 100 + 0.5f),
-            climbrate     : baro.get_climb_rate(),
-            sample_time_ms: baro.get_last_update(2)
+            climbrate     : climbrate,
+            sample_time_ms: baro.get_last_update(2),
+            drift_offset  : drift_offset,
         };
         WriteBlock(&pkt3, sizeof(pkt3));        
     }
@@ -1211,7 +1216,8 @@ void DataFlash_Class::Log_Write_EKF(AP_AHRS_NavEKF &ahrs, bool optFlowEnabled)
         Vector3f magVar;
         float tasVar;
         Vector2f offset;
-        uint8_t faultStatus, timeoutStatus;
+        uint16_t faultStatus;
+        uint8_t timeoutStatus;
         nav_filter_status solutionStatus;
         nav_gps_status gpsStatus {};
         ahrs.get_NavEKF().getVariances(velVar, posVar, hgtVar, magVar, tasVar, offset);
@@ -1231,7 +1237,7 @@ void DataFlash_Class::Log_Write_EKF(AP_AHRS_NavEKF &ahrs, bool optFlowEnabled)
             sqrtvarVT : (int16_t)(100*tasVar),
             offsetNorth : (int8_t)(offset.x),
             offsetEast : (int8_t)(offset.y),
-            faults : (uint8_t)(faultStatus),
+            faults : (uint16_t)(faultStatus),
             timeouts : (uint8_t)(timeoutStatus),
             solution : (uint16_t)(solutionStatus.value),
             gps : (uint16_t)(gpsStatus.value)
@@ -1370,11 +1376,12 @@ void DataFlash_Class::Log_Write_EKF2(AP_AHRS_NavEKF &ahrs, bool optFlowEnabled)
     Vector3f magVar;
     float tasVar = 0;
     Vector2f offset;
-    uint8_t faultStatus=0, timeoutStatus=0;
+    uint16_t faultStatus=0;
+    uint8_t timeoutStatus=0;
     nav_filter_status solutionStatus {};
     nav_gps_status gpsStatus {};
     ahrs.get_NavEKF2().getVariances(0,velVar, posVar, hgtVar, magVar, tasVar, offset);
-    float magLength = magVar.length();
+    float tempVar = fmaxf(fmaxf(magVar.x,magVar.y),magVar.z);
     ahrs.get_NavEKF2().getFilterFaults(0,faultStatus);
     ahrs.get_NavEKF2().getFilterTimeouts(0,timeoutStatus);
     ahrs.get_NavEKF2().getFilterStatus(0,solutionStatus);
@@ -1388,12 +1395,12 @@ void DataFlash_Class::Log_Write_EKF2(AP_AHRS_NavEKF &ahrs, bool optFlowEnabled)
         sqrtvarV : (int16_t)(100*velVar),
         sqrtvarP : (int16_t)(100*posVar),
         sqrtvarH : (int16_t)(100*hgtVar),
-        sqrtvarM : (int16_t)(100*magLength),
+        sqrtvarM : (int16_t)(100*tempVar),
         sqrtvarVT : (int16_t)(100*tasVar),
         tiltErr : (float)tiltError,
         offsetNorth : (int8_t)(offset.x),
         offsetEast : (int8_t)(offset.y),
-        faults : (uint8_t)(faultStatus),
+        faults : (uint16_t)(faultStatus),
         timeouts : (uint8_t)(timeoutStatus),
         solution : (uint16_t)(solutionStatus.value),
         gps : (uint16_t)(gpsStatus.value),
@@ -1502,7 +1509,7 @@ void DataFlash_Class::Log_Write_EKF2(AP_AHRS_NavEKF &ahrs, bool optFlowEnabled)
 
         // Write 9th EKF packet
         ahrs.get_NavEKF2().getVariances(1,velVar, posVar, hgtVar, magVar, tasVar, offset);
-        magLength = magVar.length();
+        tempVar = fmaxf(fmaxf(magVar.x,magVar.y),magVar.z);
         ahrs.get_NavEKF2().getFilterFaults(1,faultStatus);
         ahrs.get_NavEKF2().getFilterTimeouts(1,timeoutStatus);
         ahrs.get_NavEKF2().getFilterStatus(1,solutionStatus);
@@ -1514,12 +1521,12 @@ void DataFlash_Class::Log_Write_EKF2(AP_AHRS_NavEKF &ahrs, bool optFlowEnabled)
             sqrtvarV : (int16_t)(100*velVar),
             sqrtvarP : (int16_t)(100*posVar),
             sqrtvarH : (int16_t)(100*hgtVar),
-            sqrtvarM : (int16_t)(100*magLength),
+            sqrtvarM : (int16_t)(100*tempVar),
             sqrtvarVT : (int16_t)(100*tasVar),
             tiltErr : (float)tiltError,
             offsetNorth : (int8_t)(offset.x),
             offsetEast : (int8_t)(offset.y),
-            faults : (uint8_t)(faultStatus),
+            faults : (uint16_t)(faultStatus),
             timeouts : (uint8_t)(timeoutStatus),
             solution : (uint16_t)(solutionStatus.value),
             gps : (uint16_t)(gpsStatus.value),
@@ -1786,7 +1793,8 @@ void DataFlash_Class::Log_Write_Airspeed(AP_Airspeed &airspeed)
         diffpressure  : airspeed.get_differential_pressure(),
         temperature   : (int16_t)(temperature * 100.0f),
         rawpressure   : airspeed.get_raw_pressure(),
-        offset        : airspeed.get_offset()
+        offset        : airspeed.get_offset(),
+        use           : airspeed.use()
     };
     WriteBlock(&pkt, sizeof(pkt));
 }

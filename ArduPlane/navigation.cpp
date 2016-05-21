@@ -34,7 +34,7 @@ void Plane::loiter_angle_update(void)
 {
     int32_t target_bearing_cd = nav_controller->target_bearing_cd();
     int32_t loiter_delta_cd;
-    if (loiter.sum_cd == 0 && !nav_controller->reached_loiter_target()) {
+    if (loiter.sum_cd == 0 && !reached_loiter_target()) {
         // we don't start summing until we are doing the real loiter
         loiter_delta_cd = 0;
     } else if (loiter.sum_cd == 0) {
@@ -100,7 +100,7 @@ void Plane::calc_airspeed_errors()
     }
 
     // Landing airspeed target
-    if (control_mode == AUTO && ahrs.airspeed_sensor_enabled()) {
+    if (control_mode == AUTO) {
         float land_airspeed = SpdHgt_Controller->get_land_airspeed();
         switch (flight_stage) {
         case AP_SpdHgtControl::FLIGHT_LAND_APPROACH:
@@ -144,7 +144,7 @@ void Plane::calc_airspeed_errors()
 
     // use the TECS view of the target airspeed for reporting, to take
     // account of the landing speed
-    airspeed_error_cm = SpdHgt_Controller->get_target_airspeed()*100 - airspeed_measured_cm;
+    airspeed_error = SpdHgt_Controller->get_target_airspeed() - airspeed_measured_cm * 0.01f;
 }
 
 void Plane::calc_gndspeed_undershoot()
@@ -173,7 +173,17 @@ void Plane::update_loiter(uint16_t radius)
         }
     }
 
-    if (loiter.start_time_ms == 0 &&
+    if (loiter.start_time_ms != 0 &&
+        quadplane.available() &&
+        quadplane.guided_mode != 0) {
+        if (!auto_state.vtol_loiter) {
+            auto_state.vtol_loiter = true;
+            // reset loiter start time, so we don't consider the point
+            // reached till we get much closer
+            loiter.start_time_ms = 0;
+            quadplane.guided_start();
+        }
+    } else if (loiter.start_time_ms == 0 &&
         control_mode == AUTO &&
         !auto_state.no_crosstrack &&
         get_distance(current_loc, next_WP_loc) > radius*2) {
@@ -185,13 +195,17 @@ void Plane::update_loiter(uint16_t radius)
     }
 
     if (loiter.start_time_ms == 0) {
-        if (nav_controller->reached_loiter_target() ||
+        if (reached_loiter_target() ||
             auto_state.wp_proportion > 1) {
             // we've reached the target, start the timer
             loiter.start_time_ms = millis();
             if (control_mode == GUIDED) {
                 // starting a loiter in GUIDED means we just reached the target point
                 gcs_send_mission_item_reached_message(0);
+            }
+            if (quadplane.available() &&
+                quadplane.guided_mode != 0) {
+                quadplane.guided_start();
             }
         }
     }
@@ -284,3 +298,14 @@ void Plane::setup_turn_angle(void)
     }
 }    
 
+/*
+  see if we have reached our loiter target
+ */
+bool Plane::reached_loiter_target(void)
+{
+    if (quadplane.in_vtol_auto()) {
+        return auto_state.wp_distance < 3;
+    }
+    return nav_controller->reached_loiter_target();
+}
+    

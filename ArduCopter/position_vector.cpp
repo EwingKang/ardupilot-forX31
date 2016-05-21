@@ -64,5 +64,12 @@ float Copter::pv_get_bearing_cd(const Vector3f &origin, const Vector3f &destinat
 // pv_get_horizontal_distance_cm - return distance between two positions in cm
 float Copter::pv_get_horizontal_distance_cm(const Vector3f &origin, const Vector3f &destination)
 {
-    return pythagorous2(destination.x-origin.x,destination.y-origin.y);
+    return norm(destination.x-origin.x,destination.y-origin.y);
+}
+
+// returns distance between a destination and home in cm
+float Copter::pv_distance_to_home_cm(const Vector3f &destination)
+{
+    Vector3f home = pv_location_to_vector(ahrs.get_home());
+    return pv_get_horizontal_distance_cm(home, destination);
 }

@@ -701,7 +701,7 @@ bool Plane::suppress_throttle(void)
             millis() - started_flying_ms > MAX(launch_duration_ms, 5000U) && // been flying >5s in any mode
             adjusted_relative_altitude_cm() > 500 && // are >5m above AGL/home
             labs(ahrs.pitch_sensor) < 3000 && // not high pitch, which happens when held before launch
-            gps_movement) { // definate gps movement
+            gps_movement) { // definite gps movement
             // we're already flying, do not suppress the throttle. We can get
             // stuck in this condition if we reset a mission and cmd 1 is takeoff
             // but we're currently flying around below the takeoff altitude
@@ -1094,7 +1094,8 @@ void Plane::set_servos(void)
                     control_mode == FLY_BY_WIRE_A ||
                     control_mode == FLY_BY_WIRE_EW ||       
                     control_mode == NDI_EW ||
-                    control_mode == AUTOTUNE)) {
+                    control_mode == AUTOTUNE) &&
+                   !failsafe.ch3_counter) {
             // manual pass through of throttle while in FBWA or
             // STABILIZE mode with THR_PASS_STAB set
             // also pass through EWING

@@ -118,7 +118,7 @@ void Tracker::tracking_update_position(const mavlink_global_position_int_t &msg)
     vehicle.location.lng = msg.lon;
     vehicle.location.alt = msg.alt/10;
     vehicle.heading      = msg.hdg * 0.01f;
-    vehicle.ground_speed = pythagorous2(msg.vx, msg.vy) * 0.01f;
+    vehicle.ground_speed = norm(msg.vx, msg.vy) * 0.01f;
     vehicle.last_update_us = AP_HAL::micros();    
     vehicle.last_update_ms = AP_HAL::millis();
 
@@ -150,6 +150,9 @@ void Tracker::tracking_update_pressure(const mavlink_scaled_pressure_t &msg)
         nav_status.altitude_difference = 0;
         nav_status.need_altitude_calibration = false;
     }
+
+    // log altitude difference
+    Log_Write_Vehicle_Baro(local_pressure, alt_diff);
 }
 
 /**

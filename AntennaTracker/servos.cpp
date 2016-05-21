@@ -190,7 +190,7 @@ void Tracker::update_yaw_position_servo(float yaw)
     // the servo limits are reached and the servo has to slew 360 degrees to the 'other side' to keep tracking.
     //
     // This algorithm accounts for the fact that the antenna mount may not be aligned with North
-    // (in fact, any alignment is permissable), and that the alignment may change (possibly rapidly) over time
+    // (in fact, any alignment is permissible), and that the alignment may change (possibly rapidly) over time
     // (as when the antenna is mounted on a moving, turning vehicle)
     // When the servo is being forced beyond its limits, it rapidly slews to the 'other side' then normal tracking takes over.
     //
@@ -332,7 +332,7 @@ void Tracker::update_yaw_onoff_servo(float yaw)
 void Tracker::update_yaw_cr_servo(float yaw)
 {
     int32_t ahrs_yaw_cd = wrap_180_cd(ahrs.yaw_sensor);
-    float yaw_cd = wrap_180_cd_float(yaw*100.0f);
+    float yaw_cd = wrap_180_cd(yaw*100.0f);
     float err_cd = wrap_180_cd(yaw_cd - (float)ahrs_yaw_cd);
 
     channel_yaw.set_servo_out(g.pidYaw2Srv.get_pid(err_cd));
