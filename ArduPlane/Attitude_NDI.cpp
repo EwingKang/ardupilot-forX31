@@ -105,7 +105,7 @@ void Plane::aero_desired_rate(float &a_dot_des, float &b_dot_des, float &m_dot_d
     float aspeed = vel_NED.length();
     
     // ndi_scaler, the higher the speed, the closer the scaler become 1
-    float ndi_scaler = 1 + (g.ndi_sl_lospd_bffr_ew - 1) * pow(((g.ctrl_trans_ub_ew - aspeed)/(g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew)),2);
+    float ndi_scaler = 1 + (g.ndi_sl_lospd_bffr_ew - 1) * pow((double)((g.ctrl_trans_ub_ew - aspeed)/(g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew)),2.0f);
     if (aspeed < g.ctrl_trans_lb_ew) {
         ndi_scaler = g.ndi_sl_lospd_bffr_ew;
     }else if (aspeed > g.ctrl_trans_ub_ew) {
