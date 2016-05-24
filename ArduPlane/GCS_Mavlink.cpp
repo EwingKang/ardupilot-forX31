@@ -95,13 +95,10 @@ void Plane::send_heartbeat(mavlink_channel_t chan)
     // indicate we have set a custom mode
     base_mode |= MAV_MODE_FLAG_CUSTOM_MODE_ENABLED;
 
-    mavlink_msg_heartbeat_send(
-        chan,
-        MAV_TYPE_FIXED_WING,
-        MAV_AUTOPILOT_ARDUPILOTMEGA,
-        base_mode,
-        custom_mode,
-        system_status);
+    gcs[chan-MAVLINK_COMM_0].send_heartbeat(MAV_TYPE_FIXED_WING,
+                                            base_mode,
+                                            custom_mode,
+                                            system_status);
 }
 
 void Plane::send_attitude(mavlink_channel_t chan)
@@ -2078,6 +2075,10 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
     case MAVLINK_MSG_ID_ADSB_VEHICLE:
         plane.adsb.update_vehicle(msg);
         break;
+
+    case MAVLINK_MSG_ID_SETUP_SIGNING:
+        handle_setup_signing(msg);
+        break;
     } // end switch
 } // end handle mavlink
 
@@ -2195,8 +2196,7 @@ void Plane::gcs_send_airspeed_calibration(const Vector3f &vg)
 {
     for (uint8_t i=0; i<num_gcs; i++) {
         if (gcs[i].initialised) {
-            if (comm_get_txspace((mavlink_channel_t)i) - MAVLINK_NUM_NON_PAYLOAD_BYTES >= 
-                MAVLINK_MSG_ID_AIRSPEED_AUTOCAL_LEN) {
+            if (HAVE_PAYLOAD_SPACE((mavlink_channel_t)i, AIRSPEED_AUTOCAL)) {
                 airspeed.log_mavlink_send((mavlink_channel_t)i, vg);
             }
         }

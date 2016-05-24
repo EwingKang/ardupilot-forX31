@@ -18,8 +18,8 @@
 #include <AP_HAL/utility/RingBuffer.h>
 
 // check if a message will fit in the payload space available
-#define HAVE_PAYLOAD_SPACE(chan, id) (comm_get_txspace(chan) >= MAVLINK_NUM_NON_PAYLOAD_BYTES+MAVLINK_MSG_ID_ ## id ## _LEN)
-#define CHECK_PAYLOAD_SIZE(id) if (comm_get_txspace(chan) < MAVLINK_NUM_NON_PAYLOAD_BYTES+MAVLINK_MSG_ID_ ## id ## _LEN) return false
+#define HAVE_PAYLOAD_SPACE(chan, id) (comm_get_txspace(chan) >= GCS_MAVLINK::packet_overhead_chan(chan)+MAVLINK_MSG_ID_ ## id ## _LEN)
+#define CHECK_PAYLOAD_SIZE(id) if (comm_get_txspace(chan) < packet_overhead()+MAVLINK_MSG_ID_ ## id ## _LEN) return false
 #define CHECK_PAYLOAD_SIZE2(id) if (!HAVE_PAYLOAD_SPACE(chan, id)) return false
 
 #if HAL_CPU_CLASS <= HAL_CPU_CLASS_150 || CONFIG_HAL_BOARD == HAL_BOARD_SITL
@@ -163,6 +163,7 @@ public:
     void send_vibration(const AP_InertialSensor &ins) const;
     void send_home(const Location &home) const;
     static void send_home_all(const Location &home);
+    void send_heartbeat(uint8_t type, uint8_t base_mode, uint32_t custom_mode, uint8_t system_status);
 
     // return a bitmap of active channels. Used by libraries to loop
     // over active channels to send to all active channels    
@@ -203,7 +204,13 @@ public:
     static void set_dataflash(DataFlash_Class *dataflash) {
         dataflash_p = dataflash;
     }
-    
+
+    // update signing timestamp on GPS lock
+    static void update_signing_timestamp(uint64_t timestamp_usec);
+
+    // return current packet overhead for a channel
+    static uint8_t packet_overhead_chan(mavlink_channel_t chan);
+
 private:
     float       adjust_rate_for_stream_trigger(enum streams stream_num);
 
@@ -307,7 +314,9 @@ private:
 
     // pointer to static dataflash for logging of text messages
     static DataFlash_Class *dataflash_p;
-    
+
+    static const AP_SerialManager *serialmanager_p;
+
     // a vehicle can optionally snoop on messages for other systems
     static void (*msg_snoop)(const mavlink_message_t* msg);
 
@@ -350,4 +359,17 @@ private:
 
     // return true if this channel has hardware flow control
     bool have_flow_control(void);
+
+    mavlink_signing_t signing;
+    static mavlink_signing_streams_t signing_streams;
+    static uint32_t last_signing_save_ms;
+    
+    static StorageAccess _signing_storage;
+    void handle_setup_signing(const mavlink_message_t *msg);
+    static bool signing_key_save(const struct SigningKey &key);
+    static bool signing_key_load(struct SigningKey &key);
+    void load_signing_key(void);
+    bool signing_enabled(void) const;
+    uint8_t packet_overhead(void) const { return packet_overhead_chan(chan); }
+    static void save_signing_timestamp(bool force_save_now);
 };

@@ -21,7 +21,7 @@
 #include <drivers/drv_pwm_output.h>
 #include <systemlib/mixer/mixer.h>
 #include <modules/px4iofirmware/protocol.h>
-#include <GCS_MAVLink/include/mavlink/v1.0/checksum.h>
+#include <GCS_MAVLink/include/mavlink/v2.0/checksum.h>
 
 #define PX4_LIM_RC_MIN 900
 #define PX4_LIM_RC_MAX 2100
