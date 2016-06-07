@@ -21,8 +21,8 @@
 #define     CTRL_TRANS_LB_EW    4
 #define     MAX_THRUST_EW       2*9.81
 #define     MAX_AILE_ANG_EW     30
-#define     MAX_CNRD_ANG_EW     80
-#define     MIN_CNRD_ANG_EW     -30
+#define     MAX_CNRD_ANG_EW     38
+#define     MIN_CNRD_ANG_EW     -88
 #define     MAX_RUDD_ANG_EW     30
 #define     MAX_TVC_Y_ANG_EW    15
 #define     MAX_TVC_X_ANG_EW    15
@@ -42,11 +42,11 @@
 #define     NDI_KI_R_EW         0.5
 #define     NDI_SL_SPDBUF_EW    5
 #define     NDI_FL_SPDBUF_EW    5
-#define     NDI_IXX_EW          0.02262             // By CATIA X31v2.3_material(2016.5.9)
-#define     NDI_IYY_EW          0.15353
-#define     NDI_IZZ_EW          0.15931
-#define     NDI_IXZ_EW          0.00308
-#define     NDI_MASS_EW         1.75
+#define     NDI_IXX_EW          0.02158             // By CATIA X31v2.3_material(2016.5.9)
+#define     NDI_IYY_EW          0.15193
+#define     NDI_IZZ_EW          0.15744
+#define     NDI_IXZ_EW          0.00336
+#define     NDI_MASS_EW         1.70
 #define     NDI_MW_B_EW         1
 #define     NDI_MW_C_EW         0.23
 #define     NDI_MW_S_EW         0.3357

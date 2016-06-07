@@ -49,6 +49,7 @@ public:
         k_param_format_version = 0,
         k_param_software_type,
         k_param_num_resets,
+        k_param_NavEKF2,
 
         // Misc
         //
@@ -202,7 +203,7 @@ public:
         k_param_NavEKF,  // Extended Kalman Filter Inertial Navigation Group
         k_param_mission, // mission library
         k_param_serial_manager, // serial manager library
-        k_param_NavEKF2,  // EKF2
+        k_param_NavEKF2_old,  // deprecated
         k_param_land_pre_flare_alt,
         k_param_land_pre_flare_airspeed = 149,
 
@@ -340,17 +341,18 @@ public:
         k_param_pidNavPitchAltitude, // unused
         k_param_pidWheelSteer, // unused
 
-        
-        //
-        // 248: EWING 
-        k_param_roll_limit_cd_ew = 248,
-        k_param_max_aoa_in_cd_ew,
-        k_param_min_aoa_in_cd_ew,
-        k_param_enable_aoa_cmpnstr_ew,
-        
+        k_param_mixing_offset,
+        k_param_dspoiler_rud_rate,
+
         k_param_DataFlash = 253, // Logging Group
         
         // 254,255: reserved
+        
+        // 254: EWING 
+        k_param_roll_limit_cd_ew,
+        k_param_max_aoa_in_cd_ew,
+        k_param_min_aoa_in_cd_ew,
+        k_param_enable_aoa_cmpnstr_ew,       
         //EWING continued
         k_param_k_aoa_to_rate_ew,
         k_param_k_mu_to_rate_ew, 
@@ -367,7 +369,7 @@ public:
         k_param_max_tvc_z_ang_ew,
         
         //EWING NDI 
-        k_param_ndi_kp_aoa_ew = 267,
+        k_param_ndi_kp_aoa_ew = 271,
         k_param_ndi_kp_mu_ew,
         k_param_ndi_kp_ss_ew,
         k_param_ndi_kp_p_ew,
@@ -513,6 +515,8 @@ public:
     AP_Int8 reverse_elevons;
     AP_Int8 reverse_ch1_elevon;
     AP_Int8 reverse_ch2_elevon;
+    AP_Int16 mixing_offset;
+    AP_Int16 dspoiler_rud_rate;
     AP_Int16 num_resets;
     AP_Int32 log_bitmask;
     AP_Int8 reset_switch_chan;
