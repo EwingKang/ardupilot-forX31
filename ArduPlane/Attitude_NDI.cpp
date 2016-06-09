@@ -110,7 +110,7 @@ void Plane::aero_desired_rate(float &a_dot_des, float &b_dot_des, float &m_dot_d
     float aspeed = vel_NED.length();
     
     // ndi_scaler, the higher the speed, the closer the scaler become 1
-    float ndi_scaler = 1 + (g.ndi_sl_lospd_bffr_ew - 1) * pow((double)((g.ctrl_trans_ub_ew - aspeed)/(g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew)),2.0f);
+    float ndi_scaler = 1 + (g.ndi_sl_lospd_bffr_ew - 1) * pow(((g.ctrl_trans_ub_ew - aspeed)/(g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew)),2.0f);
     if (aspeed < g.ctrl_trans_lb_ew) {
         ndi_scaler = g.ndi_sl_lospd_bffr_ew;
     }else if (aspeed > g.ctrl_trans_ub_ew) {
@@ -233,7 +233,7 @@ void Plane::omega_desired_rate(const Vector3f &omega_c, Vector3f &omega_dot_des,
     float aspeed = vel_NED.length();
     
     // ndi_scaler, the higher the speed, the closer the scaler become 1
-    float ndi_scaler = 1 + (g.ndi_fl_lospd_bffr_ew - 1) * pow(((g.ctrl_trans_ub_ew - aspeed)/(g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew)), 2);
+    float ndi_scaler = 1 + (g.ndi_fl_lospd_bffr_ew - 1) * pow(((g.ctrl_trans_ub_ew - aspeed)/(g.ctrl_trans_ub_ew - g.ctrl_trans_lb_ew)), 2.0f);
     if (aspeed < g.ctrl_trans_lb_ew) {
         ndi_scaler = g.ndi_fl_lospd_bffr_ew;
     }else if (aspeed > g.ctrl_trans_ub_ew) {
@@ -317,16 +317,16 @@ bool Plane::get_fl_input_mat(Matrix3f &g_fR, Matrix3f &g_fRinv)
     float vel = vel_NED.length();
     float Q = 0.5*g.ndi_air_density_ew*vel*vel;
     float ahrs_aoa = ToDeg(eular132.y);
-    float Clda = aero_coef(271, ahrs_aoa);  // Cl/ail
-    float Cnda = aero_coef(272, ahrs_aoa);  // Cn/ail
-    float Cldr = aero_coef(281, ahrs_aoa);  // Cl/rud
-    float Cndr = aero_coef(282, ahrs_aoa);  // Cn/rud
-    float Cmdc = aero_coef(2101, ahrs_aoa); // Cm/can
+    float Clda = aero_coef(271, ahrs_aoa)*Q*g.ndi_mw_S_ew*g.ndi_mw_b_ew;  // Cl/ail
+    float Cnda = aero_coef(272, ahrs_aoa)*Q*g.ndi_mw_S_ew*g.ndi_mw_b_ew;  // Cn/ail
+    float Cldr = aero_coef(281, ahrs_aoa)*Q*g.ndi_mw_S_ew*g.ndi_mw_b_ew;  // Cl/rud
+    float Cndr = aero_coef(282, ahrs_aoa)*Q*g.ndi_mw_S_ew*g.ndi_mw_b_ew;  // Cn/rud
+    float Cmdc = aero_coef(2101, ahrs_aoa)*Q*g.ndi_mw_S_ew*g.ndi_mw_c_ew; // Cm/can
     Matrix3f input_mat( Vector3f(Clda,    0, Cldr), 
                         Vector3f(   0, Cmdc,    0),
                         Vector3f(Cnda,    0, Cndr)  );
                         
-    g_fR = (inertiaMatInv * input_mat)*Q*g.ndi_mw_S_ew*g.ndi_mw_b_ew;   // (5.2.16)
+    g_fR = inertiaMatInv * input_mat;   // (5.2.16)
     return inverse3x3(&g_fR[0][0], &g_fRinv[0][0]);
 }
 
@@ -346,8 +346,12 @@ void Plane::ndi_set_servo(const Vector3f &actuator_cmd)
     
     channel_roll->set_servo_out(ail_deg * 4500 / g.max_aileron_ang_ew);
     channel_pitch->set_servo_out(can_deg * 100);
+    
+    // AP_YawController +Ve deflection yaws nose right, but 228a&223b
+    // shows positive yaws left.
+    
     //channel_rudder->servo_out = rud_deg * 4500 / g.max_rudder_ang_ew;
-    steering_control.rudder  = rud_deg * 4500 / g.max_rudder_ang_ew;
+    steering_control.rudder = -rud_deg * 4500 / g.max_rudder_ang_ew;
     return;
 }
 

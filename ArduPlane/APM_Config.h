@@ -30,18 +30,18 @@
 //NDI, value is incorrect
 #define     NDI_KP_AOA_EW       1
 #define     NDI_KP_MU_EW        1
-#define     NDI_KP_SS_EW        0.8
+#define     NDI_KP_SS_EW        0.9
 #define     NDI_KP_P_EW         5
 #define     NDI_KP_Q_EW         5
-#define     NDI_KP_R_EW         4
+#define     NDI_KP_R_EW         5
 #define     NDI_KI_AOA_EW       0.05
 #define     NDI_KI_MU_EW        0.05
 #define     NDI_KI_SS_EW        0.02
 #define     NDI_KI_P_EW         0.5
 #define     NDI_KI_Q_EW         0.5
 #define     NDI_KI_R_EW         0.5
-#define     NDI_SL_SPDBUF_EW    5
-#define     NDI_FL_SPDBUF_EW    5
+#define     NDI_SL_SPDBUF_EW    4
+#define     NDI_FL_SPDBUF_EW    3.5
 #define     NDI_IXX_EW          0.02158             // By CATIA X31v2.3_material(2016.5.9)
 #define     NDI_IYY_EW          0.15193
 #define     NDI_IZZ_EW          0.15744
