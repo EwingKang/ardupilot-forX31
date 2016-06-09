@@ -314,6 +314,8 @@ bool Plane::fast_dynamic_rate(Vector3f &omega_dot_dym)
 
 bool Plane::get_fl_input_mat(Matrix3f &g_fR, Matrix3f &g_fRinv)
 {
+    float vel = vel_NED.length();
+    float Q = 0.5*g.ndi_air_density_ew*vel*vel;
     float ahrs_aoa = ToDeg(eular132.y);
     float Clda = aero_coef(271, ahrs_aoa);  // Cl/ail
     float Cnda = aero_coef(272, ahrs_aoa);  // Cn/ail
@@ -323,7 +325,8 @@ bool Plane::get_fl_input_mat(Matrix3f &g_fR, Matrix3f &g_fRinv)
     Matrix3f input_mat( Vector3f(Clda,    0, Cldr), 
                         Vector3f(   0, Cmdc,    0),
                         Vector3f(Cnda,    0, Cndr)  );
-    g_fR = inertiaMatInv * input_mat;   // (5.2.16)
+                        
+    g_fR = (inertiaMatInv * input_mat)*Q*g.ndi_mw_S_ew*g.ndi_mw_b_ew;   // (5.2.16)
     return inverse3x3(&g_fR[0][0], &g_fRinv[0][0]);
 }
 
