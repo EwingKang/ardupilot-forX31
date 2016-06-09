@@ -417,7 +417,7 @@ void Plane::Log_Write_EWAero(const float &Vspeed)
         ,aero_avail         : aero_available
         ,freestream_vel     : Vspeed
         ,angle_of_attack    : ToDeg(eular132.y)
-        ,angle_of_sideslip  : ToDeg(eular132.z)
+        ,angle_of_sideslip  : ToDeg(-eular132.z)
         ,aero_roll          : ToDeg(eular132.x)
         };
 
@@ -461,16 +461,22 @@ void Plane::Log_Write_EWNDI(const int8_t &haveSlowLoop, const int8_t &haveFastLo
 struct PACKED log_ewing_ndi2 {
     LOG_PACKET_HEADER;
     uint64_t time_us;
+    float om_xd_dm;
+    float om_yd_dm;
+    float om_zd_dm;
     float ail_cmd;
     float can_cmd;
     float rud_cmd;
 };
 
-void Plane::Log_Write_EWNDII(const Vector3f &actuator_cmd)
+void Plane::Log_Write_EWNDII(const Vector3f &omega_dot_dym, const Vector3f &actuator_cmd)
 {
     struct log_ewing_ndi2 pkt = {
         LOG_PACKET_HEADER_INIT(LOG_EWNDII_MSG)
         ,time_us            : AP_HAL::micros64()
+        ,om_xd_dm             : omega_dot_dym.x
+        ,om_yd_dm             : omega_dot_dym.y
+        ,om_zd_dm             : omega_dot_dym.z
         ,ail_cmd             : actuator_cmd.x
         ,can_cmd             : actuator_cmd.y
         ,rud_cmd             : actuator_cmd.z
@@ -645,7 +651,7 @@ const struct LogStructure Plane::log_structure[] = {
     { LOG_EWNDI_MSG, sizeof(log_ewing_ndi),      
       "EWN", "Qbbffffff", "TimeUS,haveSL,haveFL,a_d_dm,b_d_dm,m_d_dm,wc_x,wc_y,wc_z" }, // EWING NDI logging
     { LOG_EWNDII_MSG, sizeof(log_ewing_ndi2),      
-      "EWN2", "Qfff", "TimeUS,act_x,act_y,act_z" }, // EWING NDI 2 logging
+      "EWN2", "Qfff", "TimeUS,om_dx_dm, om_dy_dm, om_dz_dm, act_x,act_y,act_z" }, // EWING NDI 2 logging
     { LOG_EWNDI_INIT, sizeof(log_ew_ndi_init),
       "EWNI", "fffffffff", "invi11,invi12,invi13,invi21,invi22,invi23,invi31,invi32,invi33" }, // EWING NDI logging 
 #if OPTFLOW == ENABLED

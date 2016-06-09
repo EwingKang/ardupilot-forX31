@@ -11,6 +11,7 @@ void Plane::ndi_ewing(float speed_scaler)
     if (_last_t == 0 || dt > 1000) {
 		dt = 0;
         reset_i = true;
+        Log_Write_EWNDIinit(inertiaMatInv);
 	}
 	_last_t = tnow;
 	float delta_time    = (float)dt * 0.001f;
@@ -57,6 +58,9 @@ void Plane::ndi_ewing(float speed_scaler)
         Vector3f omega_dot_des, omega_dot_dym;
         Vector3f actuator_command;
         omega_desired_rate(omega_command, omega_dot_des, delta_time, reset_i);
+        //EWING0608 ERR
+        //omega_c is correct, however, the act_x and act_z is inverted
+        //the suspects are omega_dot_dym and g_fRinv
         if(fast_dynamic_rate(omega_dot_dym)) {
             Matrix3f g_fR, g_fRinv;
             if( get_fl_input_mat(g_fR,g_fRinv) ) {
@@ -75,6 +79,7 @@ void Plane::ndi_ewing(float speed_scaler)
             return;
         }
     ndi_set_servo(actuator_command);
+    Log_Write_EWNDII(omega_dot_dym, actuator_command);
     }else {
         // if no aero & velocity available
        ew_fbwa_backup();
@@ -190,7 +195,7 @@ bool Plane::slow_dynamic_rate(float &alpha_dot_dym, float &beta_dot_dym, float &
     Vector3f aero_mu_g(0,0,g.ndi_mass_ew*9.81);
     (velQuat*q_mu).earth_to_body(aero_mu_g);
     
-    alpha_dot_dym = (-lift + aero_mu_g.z - thrust * sinf(eular132.y)) / (g.ndi_mass_ew * vel_NED.length() * cosf(eular132.z));
+    alpha_dot_dym = (-lift + aero_mu_g.z - thrust * sinf(eular132.y)) / (g.ndi_mass_ew * vel_NED.length() * cosf(-eular132.z));
     
     //(5.3.9)
     beta_dot_dym = (side_force*cosf(-eular132.z) + aero_mu_g.y) / (g.ndi_mass_ew * vel_NED.length());
@@ -340,7 +345,6 @@ void Plane::ndi_set_servo(const Vector3f &actuator_cmd)
     channel_pitch->set_servo_out(can_deg * 100);
     //channel_rudder->servo_out = rud_deg * 4500 / g.max_rudder_ang_ew;
     steering_control.rudder  = rud_deg * 4500 / g.max_rudder_ang_ew;
-    Log_Write_EWNDII(actuator_cmd);
     return;
 }
 
@@ -380,7 +384,7 @@ float Plane::aero_coef(const uint16_t &ind, const float &alpha)
         break;
         
     case 231:           // [EVEN][a] CY 
-        y = - 1l;
+        y = - 1;
         break;
         
     case 232:           // [EVEN][a] CY with rudder(deg)
