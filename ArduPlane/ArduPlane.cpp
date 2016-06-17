@@ -718,9 +718,11 @@ void Plane::update_flight_mode(void)
         } else {
             ew_AOA_cd = -(pitch_input * g.min_aoa_in_cd_ew);
         }
+        nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
         ew_AOA_cd = constrain_int32(ew_AOA_cd, g.min_aoa_in_cd_ew, g.max_aoa_in_cd_ew);
         if (fly_inverted()) {
             ew_AOA_cd = -ew_AOA_cd;
+            nav_pitch_cd = -nav_pitch_cd;
         }
         if (failsafe.ch3_failsafe && g.short_fs_action == 2) {
             ew_MU_cd = 0;
@@ -749,9 +751,11 @@ void Plane::update_flight_mode(void)
         } else {
             ew_AOA_cd = -(pitch_input * g.min_aoa_in_cd_ew);
         }
+        nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
         ew_AOA_cd = constrain_int32(ew_AOA_cd, g.min_aoa_in_cd_ew, g.max_aoa_in_cd_ew);
         if (fly_inverted()) {
             ew_AOA_cd = -ew_AOA_cd;
+            nav_pitch_cd = -nav_pitch_cd;
         }
         if (failsafe.ch3_failsafe && g.short_fs_action == 2) {
             ew_MU_cd = 0;
