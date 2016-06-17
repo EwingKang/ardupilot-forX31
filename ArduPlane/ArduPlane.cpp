@@ -715,8 +715,10 @@ void Plane::update_flight_mode(void)
         float pitch_input = channel_pitch->norm_input();
         if (pitch_input > 0) {
             ew_AOA_cd = pitch_input * g.max_aoa_in_cd_ew;
+            nav_pitch_cd = pitch_input * aparm.pitch_limit_max_cd;
         } else {
             ew_AOA_cd = -(pitch_input * g.min_aoa_in_cd_ew);
+            nav_pitch_cd = -(pitch_input * pitch_limit_min_cd);
         }
         nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
         ew_AOA_cd = constrain_int32(ew_AOA_cd, g.min_aoa_in_cd_ew, g.max_aoa_in_cd_ew);
@@ -748,8 +750,10 @@ void Plane::update_flight_mode(void)
         float pitch_input = channel_pitch->norm_input();
         if (pitch_input > 0) {
             ew_AOA_cd = pitch_input * g.max_aoa_in_cd_ew;
+            nav_pitch_cd = pitch_input * aparm.pitch_limit_max_cd;
         } else {
             ew_AOA_cd = -(pitch_input * g.min_aoa_in_cd_ew);
+            nav_pitch_cd = -(pitch_input * pitch_limit_min_cd);
         }
         nav_pitch_cd = constrain_int32(nav_pitch_cd, pitch_limit_min_cd, aparm.pitch_limit_max_cd.get());
         ew_AOA_cd = constrain_int32(ew_AOA_cd, g.min_aoa_in_cd_ew, g.max_aoa_in_cd_ew);
