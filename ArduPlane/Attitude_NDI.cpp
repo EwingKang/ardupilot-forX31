@@ -23,6 +23,11 @@ void Plane::ndi_ewing(float speed_scaler)
         // slow loop
         float alpha_dot_des, beta_dot_des, mu_dot_des;
         float alpha_dot_dym, beta_dot_dym, mu_dot_dym;
+        if(vel_NED.length() < g.ctrl_trans_lb_ew/2) {
+            reset_i = true;
+        }else {
+            reset_i = false;
+        }
         
         aero_desired_rate(alpha_dot_des, beta_dot_des, mu_dot_des, delta_time, reset_i);
         Vector3f aero_dot_des(alpha_dot_des, beta_dot_des, mu_dot_des);
@@ -43,13 +48,13 @@ void Plane::ndi_ewing(float speed_scaler)
                 omega_command = g_s1_inv*( aero_dot_des - aero_dot_dym );
             } else {
                 //fail to get inverse
-                ew_fbwa_backup();
+                ew_fbwa_backup(speed_scaler);
                 Log_Write_EWNDI(-2, 0, aero_dot_dym, aero_dot_des);
                 return;
             }
         }else {
             // fail to get dynamic because of excess AOA
-            ew_fbwa_backup();
+            ew_fbwa_backup(speed_scaler);
             Log_Write_EWNDI(-1, 0, Vector3f(0, 0, 0), aero_dot_des );
             return;
         }
@@ -68,13 +73,13 @@ void Plane::ndi_ewing(float speed_scaler)
                 actuator_command = g_fRinv*(omega_dot_des - omega_dot_dym);
             } else {
                 //fail to get inverse of input matrix
-                ew_fbwa_backup();
+                ew_fbwa_backup(speed_scaler);
                 Log_Write_EWNDI(1, -2, aero_dot_dym, omega_command);
                 return;
             }
         }else {
             // fail to get dynamic because of excess AOA
-            ew_fbwa_backup();
+            ew_fbwa_backup(speed_scaler);
             Log_Write_EWNDI(1, -1, aero_dot_dym, omega_command);
             return;
         }
@@ -82,7 +87,7 @@ void Plane::ndi_ewing(float speed_scaler)
     Log_Write_EWNDII(omega_dot_dym, actuator_command);
     }else {
         // if no aero & velocity available
-       ew_fbwa_backup();
+       ew_fbwa_backup(speed_scaler);
        Log_Write_EWNDI(0, 0, Vector3f(0, 0, 0), Vector3f(0, 0, 0));
     }
     Log_Write_EWNDI(1, 1, aero_dot_dym, omega_command);
@@ -479,9 +484,8 @@ float Plane::aero_coef(const uint16_t &ind, const float &alpha)
     return (float)y;
 }
 
-void Plane::ew_fbwa_backup()
+void Plane::ew_fbwa_backup(const float &speed_scaler)
 {
-    float speed_scaler = get_speed_scaler();
     // fail to activate NDI controller, fall back to FBWA calling method
     if (g.stick_mixing == STICK_MIXING_FBW && control_mode != STABILIZE) {
         stabilize_stick_mixing_fbw();

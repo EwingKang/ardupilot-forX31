@@ -10,16 +10,16 @@
 
 //////////////////////////////////////////////////////////////////////////////
 #define     ROLL_MAX_CD_EW      70*100
-#define     MAX_AOA_IN_CD_EW    70*100    
-#define     MIN_AOA_IN_CD_EW    -20*100
+#define     MAX_AOA_IN_CD_EW    30*100    
+#define     MIN_AOA_IN_CD_EW    -10*100
 #define     AOA_CMPNSTR_EW      0
 #define     K_AOA_TO_RATE_EW    2
 #define     K_MU_TO_RATE_EW     1.5
 #define     AOA_TRIM_CD_EW      500
 #define     BETA_TRIM_CD_EW     0
 #define     CTRL_TRANS_UB_EW    15
-#define     CTRL_TRANS_LB_EW    4
-#define     MAX_THRUST_EW       2*9.81
+#define     CTRL_TRANS_LB_EW    3
+#define     MAX_THRUST_EW       14.715
 #define     MAX_AILE_ANG_EW     30
 #define     MAX_CNRD_ANG_EW     38
 #define     MIN_CNRD_ANG_EW     -88
@@ -46,7 +46,7 @@
 #define     NDI_IYY_EW          0.15193
 #define     NDI_IZZ_EW          0.15744
 #define     NDI_IXZ_EW          0.00336
-#define     NDI_MASS_EW         1.70
+#define     NDI_MASS_EW         1.69
 #define     NDI_MW_B_EW         1
 #define     NDI_MW_C_EW         0.23
 #define     NDI_MW_S_EW         0.3357

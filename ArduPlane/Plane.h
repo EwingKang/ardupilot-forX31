@@ -1102,7 +1102,7 @@ private:
     bool fast_dynamic_rate(Vector3f &omega_dot_dnm);
     bool get_fl_input_mat(Matrix3f &g_fR, Matrix3f &g_fRinv);
     void ndi_set_servo(const Vector3f &actuator_cmd);
-    void ew_fbwa_backup();
+    void ew_fbwa_backup(const float &speed_scaler);
     void ndi_calculate_inertia();
     
     
