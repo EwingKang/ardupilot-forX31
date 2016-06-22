@@ -14,7 +14,7 @@ void Plane::send_heartbeat(mavlink_channel_t chan)
     uint8_t system_status;
     uint32_t custom_mode = control_mode;
     
-    if (failsafe.state != FAILSAFE_NONE) {
+    if (failsafe.state != FAILSAFE_NONE || failsafe.low_battery) {
         system_status = MAV_STATE_CRITICAL;
     } else if (plane.crash_state.is_crashed) {
         system_status = MAV_STATE_EMERGENCY;
@@ -877,6 +877,11 @@ bool GCS_MAVLINK_Plane::try_send_message(enum ap_message id)
         CHECK_PAYLOAD_SIZE(MAG_CAL_REPORT);
         plane.compass.send_mag_cal_report(chan);
         break;
+
+    case MSG_ADSB_VEHICLE:
+        CHECK_PAYLOAD_SIZE(ADSB_VEHICLE);
+        plane.adsb.send_adsb_vehicle(chan);
+        break;
     }
     return true;
 }
@@ -966,6 +971,15 @@ const AP_Param::GroupInfo GCS_MAVLINK::var_info[] = {
     // @Increment: 1
     // @User: Advanced
     AP_GROUPINFO("PARAMS",   8, GCS_MAVLINK, streamRates[8],  10),
+
+    // @Param: ADSB
+    // @DisplayName: ADSB stream rate to ground station
+    // @Description: ADSB stream rate to ground station
+    // @Units: Hz
+    // @Range: 0 50
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("ADSB",   9, GCS_MAVLINK, streamRates[9],  5),
     AP_GROUPEND
 };
 
@@ -1084,6 +1098,12 @@ GCS_MAVLINK_Plane::data_stream_send(void)
         send_message(MSG_EKF_STATUS_REPORT);
         send_message(MSG_GIMBAL_REPORT);
         send_message(MSG_VIBRATION);
+    }
+
+    if (plane.gcs_out_of_time) return;
+
+    if (stream_trigger(STREAM_ADSB)) {
+        send_message(MSG_ADSB_VEHICLE);
     }
 }
 
@@ -1230,7 +1250,16 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
         switch(packet.command) {
 
         case MAV_CMD_DO_CHANGE_SPEED:
+            // if we're in failsafe modes (e.g., RTL, LOITER) or in pilot
+            // controlled modes (e.g., MANUAL, TRAINING)
+            // this command should be ignored since it comes in from GCS
+            // or a companion computer:
             result = MAV_RESULT_FAILED;
+            if (plane.control_mode != GUIDED && plane.control_mode != AUTO) {
+                // failed
+                break;
+            }
+
             AP_Mission::Mission_Command cmd;
             if (AP_Mission::mavlink_cmd_long_to_mission_cmd(packet, cmd)
                     == MAV_MISSION_ACCEPTED) {
@@ -2102,6 +2131,59 @@ void GCS_MAVLINK_Plane::handleMessage(mavlink_message_t* msg)
                                 (double)(new_home_loc.lat*1.0e-7f),
                                 (double)(new_home_loc.lng*1.0e-7f),
                                 (uint32_t)(new_home_loc.alt*0.01f));
+        break;
+    }
+
+    case MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT:
+    {
+        // Only want to allow companion computer position control when
+        // in a certain mode to avoid inadvertently sending these
+        // kinds of commands when the autopilot is responding to problems
+        // in modes such as RTL, CIRCLE, etc.  Specifying ONLY one mode
+        // for companion computer control is more safe (provided
+        // one uses the FENCE_ACTION = 4 (RTL) for geofence failures).
+        if (plane.control_mode != GUIDED) {
+            //don't screw up failsafes
+            break;
+        }
+
+        mavlink_set_position_target_global_int_t pos_target;
+        mavlink_msg_set_position_target_global_int_decode(msg, &pos_target);
+        // Unexpectedly, the mask is expecting "ones" for dimensions that should
+        // be IGNORNED rather than INCLUDED.  See mavlink documentation of the
+        // SET_POSITION_TARGET_GLOBAL_INT message, type_mask field.
+        const uint16_t alt_mask = 0b1111111111111011; // (z mask at bit 3)
+            
+        bool msg_valid = true;
+        AP_Mission::Mission_Command cmd = {0};
+        
+        if (pos_target.type_mask & alt_mask)
+        {
+            cmd.content.location.alt = pos_target.alt * 100;
+            cmd.content.location.flags.relative_alt = false;
+            cmd.content.location.flags.terrain_alt = false;
+            switch (pos_target.coordinate_frame) 
+            {
+                case MAV_FRAME_GLOBAL_INT:
+                    break; //default to MSL altitude
+                case MAV_FRAME_GLOBAL_RELATIVE_ALT_INT:
+                    cmd.content.location.flags.relative_alt = true;          
+                    break;
+                case MAV_FRAME_GLOBAL_TERRAIN_ALT_INT:
+                    cmd.content.location.flags.relative_alt = true;          
+                    cmd.content.location.flags.terrain_alt = true;
+                    break;
+                default:
+                    plane.gcs_send_text_fmt(MAV_SEVERITY_WARNING, "Invalid coord frame in SET_POSTION_TARGET_GLOBAL_INT");
+                    msg_valid = false;
+                    break;
+            }    
+
+            if (msg_valid) {
+                handle_change_alt_request(cmd);
+            }
+        } // end if alt_mask       
+
         break;
     }
 

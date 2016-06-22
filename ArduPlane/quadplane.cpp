@@ -199,14 +199,7 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("LAND_FINAL_ALT", 27, QuadPlane, land_final_alt, 6),
 
-    // @Param: THR_MID
-    // @DisplayName: Throttle Mid Position
-    // @Description: The throttle output (0 ~ 1000) when throttle stick is in mid position.  Used to scale the manual throttle so that the mid throttle stick position is close to the throttle required to hover
-    // @User: Standard
-    // @Range: 300 700
-    // @Units: Percent*10
-    // @Increment: 10
-    AP_GROUPINFO("THR_MID", 28, QuadPlane, throttle_mid, 500),
+    // 28 was used by THR_MID
 
     // @Param: TRAN_PIT_MAX
     // @DisplayName: Transition max pitch
@@ -304,14 +297,7 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("GUIDED_MODE", 40, QuadPlane, guided_mode, 0),
 
-    // @Param: THR_MIN
-    // @DisplayName: Throttle Minimum
-    // @Description: The minimum throttle that will be sent to the motors to keep them spinning
-    // @Units: Percent*10
-    // @Range: 0 300
-    // @Increment: 1
-    // @User: Standard
-    AP_GROUPINFO("THR_MIN", 41, QuadPlane, throttle_min,  100),
+    // 41 was used by THR_MIN
 
     // @Param: ESC_CAL
     // @DisplayName: ESC Calibration
@@ -319,6 +305,14 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     // @Values: 0:Disabled,1:ThrottleInput,2:FullInput
     // @User: Standard
     AP_GROUPINFO("ESC_CAL", 42, QuadPlane, esc_calibration,  0),
+
+    // @Param: VFWD_ALT
+    // @DisplayName: Forward velocity alt cutoff
+    // @Description: Controls altitude to disable forward velocity assist when below this relative altitude. This is useful to keep the forward velocity propeller from hitting the ground. Rangefinder height data is incorporated when available.
+    // @Range: 0 10
+    // @Increment: 0.25
+    // @User: Standard
+    AP_GROUPINFO("VFWD_ALT", 43, QuadPlane, vel_forward_alt_cutoff,  0),
     
     AP_GROUPEND
 };
@@ -434,8 +428,7 @@ bool QuadPlane::setup(void)
 
     motors->set_frame_orientation(frame_type);
     motors->Init();
-    motors->set_throttle_range(throttle_min, thr_min_pwm, thr_max_pwm);
-    motors->set_hover_throttle(throttle_mid);
+    motors->set_throttle_range(thr_min_pwm, thr_max_pwm);
     motors->set_update_rate(rc_speed);
     motors->set_interlock(true);
     pid_accel_z.set_dt(loop_delta_t);
@@ -624,7 +617,7 @@ void QuadPlane::init_land(void)
     init_loiter();
     throttle_wait = false;
     poscontrol.state = QPOS_LAND_DESCEND;
-    motors_lower_limit_start_ms = 0;
+    landing_detect.lower_limit_start_ms = 0;
 }
 
 
@@ -643,24 +636,25 @@ bool QuadPlane::is_flying(void)
 // crude landing detector to prevent tipover
 bool QuadPlane::should_relax(void)
 {
-    bool motor_at_lower_limit = motors->limit.throttle_lower && motors->is_throttle_mix_min();
+    bool motor_at_lower_limit = motors->limit.throttle_lower && attitude_control->is_throttle_mix_min();
     if (motors->get_throttle() < 0.01) {
         motor_at_lower_limit = true;
     }
     if (!motor_at_lower_limit) {
-        motors_lower_limit_start_ms = 0;
+        landing_detect.lower_limit_start_ms = 0;
     }
-    if (motor_at_lower_limit && motors_lower_limit_start_ms == 0) {
-        motors_lower_limit_start_ms = millis();
+    if (motor_at_lower_limit && landing_detect.lower_limit_start_ms == 0) {
+        landing_detect.lower_limit_start_ms = millis();
     }
-    bool relax_loiter = motors_lower_limit_start_ms != 0 && (millis() - motors_lower_limit_start_ms) > 1000;
+    bool relax_loiter = landing_detect.lower_limit_start_ms != 0 &&
+        (millis() - landing_detect.lower_limit_start_ms) > 1000;
     return relax_loiter;
 }
 
 // see if we are flying in vtol
 bool QuadPlane::is_flying_vtol(void)
 {
-    if (in_vtol_mode() && millis() - motors_lower_limit_start_ms > 5000) {
+    if (in_vtol_mode() && millis() - landing_detect.lower_limit_start_ms > 5000) {
         return true;
     }
     return false;
@@ -880,6 +874,9 @@ void QuadPlane::update_transition(void)
          plane.channel_throttle->get_control_in()>0 ||
          plane.is_flying())) {
         // the quad should provide some assistance to the plane
+        if (transition_state != TRANSITION_AIRSPEED_WAIT) {
+            GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_INFO, "Transition started airspeed %.1f", (double)aspeed);
+        }
         transition_state = TRANSITION_AIRSPEED_WAIT;
         transition_start_ms = millis();
         assisted_flight = true;
@@ -929,7 +926,8 @@ void QuadPlane::update_transition(void)
             transition_state = TRANSITION_DONE;
             GCS_MAVLINK::send_statustext_all(MAV_SEVERITY_INFO, "Transition done");
         }
-        float throttle_scaled = last_throttle * (transition_time_ms - (millis() - transition_start_ms)) / (float)transition_time_ms;
+        float trans_time_ms = (float)transition_time_ms.get();
+        float throttle_scaled = last_throttle * (trans_time_ms - (millis() - transition_start_ms)) / trans_time_ms;
         if (throttle_scaled < 0) {
             throttle_scaled = 0;
         }
@@ -1341,7 +1339,7 @@ void QuadPlane::vtol_position_controller(void)
         break;
 
     case QPOS_LAND_DESCEND: {
-        float height_above_ground = (plane.current_loc.alt - loc.alt)*0.01;
+        float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
         pos_control->set_alt_target_from_climb_rate(-landing_descent_rate_cms(height_above_ground),
                                                     plane.G_Dt, true);
         break;
@@ -1552,7 +1550,7 @@ bool QuadPlane::do_vtol_land(const AP_Mission::Mission_Command& cmd)
     wp_nav->init_loiter_target();
 
     throttle_wait = false;
-    motors_lower_limit_start_ms = 0;
+    landing_detect.lower_limit_start_ms = 0;
     Location origin = inertial_nav.get_origin();
     Vector2f diff2d;
     Vector3f target;
@@ -1583,17 +1581,49 @@ bool QuadPlane::verify_vtol_takeoff(const AP_Mission::Mission_Command &cmd)
     return true;
 }
 
+/*
+  check if a landing is complete
+ */
 void QuadPlane::check_land_complete(void)
 {
-    if (poscontrol.state == QPOS_LAND_FINAL &&
-        (motors_lower_limit_start_ms != 0 &&
-         millis() - motors_lower_limit_start_ms > 5000)) {
-        plane.disarm_motors();
-        poscontrol.state = QPOS_LAND_COMPLETE;
-        plane.gcs_send_text(MAV_SEVERITY_INFO,"Land complete");
-        // reload target airspeed which could have been modified by the mission
-        plane.g.airspeed_cruise_cm.load();
+    if (poscontrol.state != QPOS_LAND_FINAL) {
+        // only apply to final landing phase
+        return;
     }
+    uint32_t now = AP_HAL::millis();
+    bool might_be_landed =  (landing_detect.lower_limit_start_ms != 0 &&
+                             now - landing_detect.lower_limit_start_ms > 1000);
+    if (!might_be_landed) {
+        landing_detect.land_start_ms = 0;
+        return;
+    }
+    float height = inertial_nav.get_altitude()*0.01f;
+    if (landing_detect.land_start_ms == 0) {
+        landing_detect.land_start_ms = now;
+        landing_detect.vpos_start_m = height;
+    }
+    // we only consider the vehicle landed when the motors have been
+    // at minimum for 5s and the vertical position estimate has not
+    // changed by more than 20cm for 4s
+    if (fabsf(height - landing_detect.vpos_start_m > 0.2)) {
+        // height has changed, call off landing detection
+        landing_detect.land_start_ms = 0;
+        return;
+    }
+           
+    if ((now - landing_detect.land_start_ms) < 4000 ||
+        (now - landing_detect.lower_limit_start_ms) < 5000) {
+        // not landed yet
+        return;
+    }
+    landing_detect.land_start_ms = 0;
+    // motors have been at zero for 5s, and we have had less than 0.3m
+    // change in altitude for last 4s. We are landed.
+    plane.disarm_motors();
+    poscontrol.state = QPOS_LAND_COMPLETE;
+    plane.gcs_send_text(MAV_SEVERITY_INFO,"Land complete");
+    // reload target airspeed which could have been modified by the mission
+    plane.g.airspeed_cruise_cm.load();
 }
 
 /*
@@ -1616,8 +1646,8 @@ bool QuadPlane::verify_vtol_land(void)
     }
 
     // at land_final_alt begin final landing
-    if (poscontrol.state == QPOS_LAND_DESCEND &&
-        plane.current_loc.alt < plane.next_WP_loc.alt+land_final_alt*100) {
+    float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
+    if (poscontrol.state == QPOS_LAND_DESCEND && height_above_ground < land_final_alt) {
         poscontrol.state = QPOS_LAND_FINAL;
         pos_control->set_alt_target(inertial_nav.get_altitude());
         plane.gcs_send_text(MAV_SEVERITY_INFO,"Land final started");
@@ -1690,6 +1720,7 @@ int8_t QuadPlane::forward_throttle_pct(void)
     if (!plane.ahrs.get_velocity_NED(vel_ned)) {
         // we don't know our velocity? EKF must be pretty sick
         vel_forward.last_pct = 0;
+        vel_forward.integrator = 0;
         return 0;
     }
     Vector3f vel_error_body = ahrs.get_rotation_body_to_ned().transposed() * ((desired_velocity_cms*0.01f) - vel_ned);
@@ -1714,10 +1745,19 @@ int8_t QuadPlane::forward_throttle_pct(void)
     // integrator as throttle percentage (-100 to 100)
     vel_forward.integrator += fwd_vel_error * deltat * vel_forward.gain * 100;
 
-    // constrain to throttle range. This allows for reverse throttle if configured
-    vel_forward.integrator = constrain_float(vel_forward.integrator, MIN(0,plane.aparm.throttle_min), plane.aparm.throttle_max);
+    // inhibit reverse throttle and allow petrol engines with min > 0
+    int8_t fwd_throttle_min = (plane.aparm.throttle_min <= 0) ? 0 : plane.aparm.throttle_min;
+    vel_forward.integrator = constrain_float(vel_forward.integrator, fwd_throttle_min, plane.aparm.throttle_max);
     
-    vel_forward.last_pct = vel_forward.integrator;
+    // If we are below alt_cutoff then scale down the effect until it turns off at alt_cutoff and decay the integrator
+    float alt_cutoff = MAX(0,vel_forward_alt_cutoff);
+    float height_above_ground = plane.relative_ground_altitude(plane.g.rangefinder_landing);
+    vel_forward.last_pct = linear_interpolate(0, vel_forward.integrator,
+                                   height_above_ground, alt_cutoff, alt_cutoff+2);
+    if (vel_forward.last_pct == 0) {
+        // if the percent is 0 then decay the integrator
+        vel_forward.integrator *= 0.95f;
+    }
 
     return vel_forward.last_pct;
 }
