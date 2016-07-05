@@ -47,6 +47,7 @@ XPlane::XPlane(const char *home_str, const char *frame_str) :
 
     // XPlane sensor data is not good enough for EKF. Use fake EKF by default
     AP_Param::set_default_by_name("AHRS_EKF_TYPE", 10);
+    AP_Param::set_default_by_name("INS_GYR_CAL", 0);
 }
 
 /*
@@ -99,7 +100,7 @@ bool XPlane::receive_data(void)
     uint64_t data_mask = 0;
     const uint64_t required_mask = (1U<<Times | 1U<<LatLonAlt | 1U<<Speed | 1U<<PitchRollHeading |
                                     1U<<LocVelDistTraveled | 1U<<AngularVelocities | 1U<<Gload |
-                                    1U << Joystick1 | 1U << ThrottleCommand);
+                                    1U << Joystick1 | 1U << ThrottleCommand | 1U << Trim);
     Location loc {};
     Vector3f pos;
     uint32_t wait_time_ms = 1;
@@ -166,6 +167,7 @@ bool XPlane::receive_data(void)
             break;
 
         case AoA:
+        case Trim:
             // ignored
             break;
 
@@ -216,14 +218,15 @@ bool XPlane::receive_data(void)
              * both for joystick throttle input and for throttle that
              * we have provided over the link. So we need some way to
              * detect when we get our own values back. The trick used
-             * is to add throttle_magic * 1.0e-6 to the values we
-             * send, then detect this offset in the data coming
-             * back. Very ugly, but I can't find a better way of
-             * allowing joystick input from XPlane10
+             * is to add throttle_magic to the values we send, then
+             * detect this offset in the data coming back. Very ugly,
+             * but I can't find a better way of allowing joystick
+             * input from XPlane10
              */
+            bool has_magic = ((uint32_t)(data[1] * throttle_magic_scale) % 1000U) == (uint32_t)(throttle_magic * throttle_magic_scale);
             if (data[1] < 0 ||
                 data[1] == throttle_sent ||
-                ((uint32_t)(data[1] * 1e6)) % 1000 == throttle_magic) {
+                has_magic) {
                 break;
             }
             rcin[2] = data[1];
@@ -324,10 +327,33 @@ void XPlane::send_data(const struct sitl_input &input)
         float    data[8];
     } d {};
 
+    if (input.servos[0] == 0) {
+        aileron = 0;
+    }
+    if (input.servos[1] == 0) {
+        elevator = 0;
+    }
+    if (input.servos[2] == 0) {
+        throttle = 0;
+    }
+    if (input.servos[3] == 0) {
+        rudder = 0;
+    }
+    
     // we add the throttle_magic to the throttle value we send so we
     // can detect when we get it back
-    throttle += throttle_magic * 1e-6f;
+    throttle = ((uint32_t)(throttle * 1000)) * 1.0e-3f + throttle_magic;
     
+    uint8_t flap_chan;
+    if (RC_Channel_aux::find_channel(RC_Channel_aux::k_flap, flap_chan) ||
+        RC_Channel_aux::find_channel(RC_Channel_aux::k_flap_auto, flap_chan)) {
+        float flap = (input.servos[flap_chan]-1000)/1000.0;
+        if (flap != last_flap) {
+            send_dref("sim/flightmodel/controls/flaprqst", flap);
+            send_dref("sim/aircraft/overflow/acf_flap_arm", flap>0?1:0);
+        }
+    }
+
     d.code = 11;
     d.data[0] = elevator;
     d.data[1] = aileron;
@@ -344,6 +370,22 @@ void XPlane::send_data(const struct sitl_input &input)
     socket_out.send(&d, sizeof(d));
 
     throttle_sent = throttle;
+}
+
+
+/*
+  send DREF to X-Plane via UDP
+*/
+void XPlane::send_dref(const char *name, float value)
+{
+    struct PACKED {
+        uint8_t  marker[5] { 'D', 'R', 'E', 'F', '0' };
+        float value;
+        char name[500];
+    } d {};
+    d.value = value;
+    strcpy(d.name, name);
+    socket_out.send(&d, sizeof(d));        
 }
     
 /*

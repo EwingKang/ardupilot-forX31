@@ -42,6 +42,7 @@ public:
 
 private:
     bool receive_data(void);
+    void send_dref(const char *name, float value);
     void send_data(const struct sitl_input &input);
     void select_data(uint64_t usel_mask, uint64_t sel_mask);
 
@@ -64,9 +65,11 @@ private:
         uint32_t data_count;
         uint32_t frame_count;
     } report;
+    float last_flap;
 
     // throttle joystick input is very weird. See comments in the main code
-    const uint32_t throttle_magic = 123;
+    const float throttle_magic = 0.000123f;
+    const float throttle_magic_scale = 1.0e6;
     
     // DATA@ frame types. Thanks to TauLabs xplanesimulator.h
     // (which strangely enough acknowledges APM as a source!)

@@ -269,6 +269,8 @@ private:
         uint32_t start_ms;
     } takeoff_state;
 
+    uint32_t precland_last_update_ms;
+
     RCMapper rcmap;
 
     // board specific config
@@ -665,7 +667,6 @@ private:
     void Log_Write_Performance();
     void Log_Write_Attitude();
     void Log_Write_MotBatt();
-    void Log_Write_Startup();
     void Log_Write_Event(uint8_t id);
     void Log_Write_Data(uint8_t id, int32_t value);
     void Log_Write_Data(uint8_t id, uint32_t value);
@@ -912,6 +913,7 @@ private:
     void pre_arm_rc_checks();
     bool pre_arm_gps_checks(bool display_failure);
     bool pre_arm_ekf_attitude_check();
+    bool pre_arm_rallypoint_check();
     bool pre_arm_terrain_check(bool display_failure);
     bool arm_checks(bool display_failure, bool arming_from_gcs);
     void init_disarm_motors();
