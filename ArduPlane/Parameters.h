@@ -395,7 +395,8 @@ public:
         k_param_ndi_sl_haoa_bffr_ew,
         k_param_ndi_fl_haoa_bffr_ew,
         k_param_ndi_aoa_bffr_ub_ew,
-        k_param_ndi_aoa_bffr_lb_ew
+        k_param_ndi_aoa_bffr_lb_ew, 
+        k_param_ndi_thrust_bdwth_ew
     };
 
     AP_Int16 format_version;
@@ -623,6 +624,7 @@ public:
     AP_Float ndi_fl_haoa_bffr_ew;
     AP_Float ndi_aoa_bffr_ub_ew;
     AP_Float ndi_aoa_bffr_lb_ew;
+    AP_Float ndi_thrust_bdwth_ew;
 
     // RC channels
     RC_Channel rc_1;

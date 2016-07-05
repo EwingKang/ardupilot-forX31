@@ -592,11 +592,16 @@ private:
     bool vel_available, aero_available;
     Vector3f vel_NED;
     
+    // EWING quaternion attitude
     Vector3f eular132;      //[MU, AOA, SS]
     float vel_gamma;        //velocity pitching angle
     
+    // EWING Aircraft moment of inertia
     Matrix3f inertiaMat, inertiaMatInv;     // Moment of Inertia matrix and its inverse
 
+    // EWING calculated thrust
+    float thrust;
+    
     // we separate out rudder input to allow for RUDDER_ONLY=1
     int16_t rudder_input;
 
@@ -1096,6 +1101,7 @@ private:
     //EWING NDI
     void ndi_ewing(float speed_scaler);                 
     float aero_coef(const uint16_t &ind, const float &alpha);
+    void update_thrust(const float &delta_time, const bool &reset_i);
     void aero_desired_rate(float &a_dot_des, float &b_dot_des, float &m_dot_des, const float &delta_time, const bool &reset_i);
     bool slow_dynamic_rate(float &alpha_dot_dym, float &beta_dopt_dym, float &mu_dot_dym);
     void omega_desired_rate(const Vector3f &omega_c, Vector3f &omega_dot_des, const float &delta_time, const bool &reset_i);

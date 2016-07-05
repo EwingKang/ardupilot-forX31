@@ -1171,6 +1171,15 @@ const AP_Param::Info Plane::var_info[] = {
     // @User: Standard
     GSCALAR(ndi_aoa_bffr_lb_ew,     "NDI_AOABFR_LB_EW",       NDI_AOABFR_LB_EW),
     
+    // @Param: NDI_THR_BDWTH_EW
+    // @DisplayName: EWING NDI Bandwidth of thrust
+    // @Description: The first-order time response constant of thrust
+    // @Units: rad/s
+    // @Range: 0 10
+    // @Increment: 0.01
+    // @User: Standard
+    GSCALAR(ndi_thrust_bdwth_ew,     "NDI_THR_BDWTH_EW",       NDI_THR_BDWTH_EW),
+    
     // @Param: ACRO_LOCKING
     // @DisplayName: ACRO mode attitude locking
     // @Description: Enable attitude locking when sticks are released

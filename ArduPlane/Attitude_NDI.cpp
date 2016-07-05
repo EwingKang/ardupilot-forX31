@@ -15,7 +15,8 @@ void Plane::ndi_ewing(float speed_scaler)
 	}
 	_last_t = tnow;
 	float delta_time    = (float)dt * 0.001f;
-
+    
+    update_thrust(delta_time, reset_i);
     Vector3f omega_command;
     Vector3f aero_dot_dym;
     
@@ -190,10 +191,8 @@ bool Plane::slow_dynamic_rate(float &alpha_dot_dym, float &beta_dot_dym, float &
     }
     
     float Q = 0.5*g.ndi_air_density_ew*vel_NED.length()*vel_NED.length();
-    float thrust = channel_throttle->norm_input() * g.max_thrust_ew;
     float lift = Q * g.ndi_mw_S_ew * aero_coef(211, ahrs_aoa);
     float side_force = Q * g.ndi_mw_S_ew * aero_coef(231, ahrs_aoa) * (-eular132.z);
-    
     //(5.3.8)
     Quaternion q_mu;
     q_mu.from_axis_angle_fast(Vector3f(1,0,0), eular132.x);
@@ -482,6 +481,16 @@ float Plane::aero_coef(const uint16_t &ind, const float &alpha)
         break;
     }
     return (float)y;
+}
+
+/**/
+void Plane::update_thrust(const float &delta_time, const bool &reset_i)
+{
+    float thrust_cmd = channel_throttle->norm_input() * g.max_thrust_ew;
+    if(reset_i) {
+        thrust = thrust_cmd;
+    }
+    thrust = thrust + (thrust_cmd - thrust) * g.ndi_thrust_bdwth_ew * delta_time;
 }
 
 void Plane::ew_fbwa_backup(const float &speed_scaler)
