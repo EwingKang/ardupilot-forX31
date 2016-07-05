@@ -436,6 +436,7 @@ struct PACKED log_ewing_ndi {
     float wc_x;
     float wc_y;
     float wc_z;
+    float _thrust;
 };
 
 void Plane::Log_Write_EWNDI(const int8_t &haveSlowLoop, const int8_t &haveFastLoop, 
@@ -452,6 +453,7 @@ void Plane::Log_Write_EWNDI(const int8_t &haveSlowLoop, const int8_t &haveFastLo
         ,wc_x               : omega_cmd.x
         ,wc_y               : omega_cmd.y
         ,wc_z               : omega_cmd.z
+        ,_thrust            : thrust
         };
 
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -467,7 +469,6 @@ struct PACKED log_ewing_ndi2 {
     float ail_cmd;
     float can_cmd;
     float rud_cmd;
-    float thrust_cal;
 };
 
 void Plane::Log_Write_EWNDII(const Vector3f &omega_dot_dym, const Vector3f &actuator_cmd)
@@ -481,7 +482,6 @@ void Plane::Log_Write_EWNDII(const Vector3f &omega_dot_dym, const Vector3f &actu
         ,ail_cmd             : actuator_cmd.x
         ,can_cmd             : actuator_cmd.y
         ,rud_cmd             : actuator_cmd.z
-        ,thrust_cal          : thrust
         };
 
     DataFlash.WriteBlock(&pkt, sizeof(pkt));
@@ -651,9 +651,9 @@ const struct LogStructure Plane::log_structure[] = {
     { LOG_EWA_MSG, sizeof(log_ewing_aero),      
       "EWA", "QBffff", "TimeUS,haveAero,aeroVel,AOA,SS,MU" },           // EWING aero logging 
     { LOG_EWNDI_MSG, sizeof(log_ewing_ndi),      
-      "EWN", "Qbbffffff", "TimeUS,haveSL,haveFL,a_d_dm,b_d_dm,m_d_dm,wc_x,wc_y,wc_z" }, // EWING NDI logging
+      "EWN", "Qbbfffffff", "TimeUS,haveSL,haveFL,a_d_dm,b_d_dm,m_d_dm,wc_x,wc_y,wc_z,thr" }, // EWING NDI logging
     { LOG_EWNDII_MSG, sizeof(log_ewing_ndi2),      
-      "EWN2", "Qfffffff", "TimeUS,om_dx_dm, om_dy_dm, om_dz_dm, act_x,act_y,act_z, thr" }, // EWING NDI 2 logging
+      "EWN2", "Qffffff", "TimeUS,om_dx_dm, om_dy_dm, om_dz_dm, act_x,act_y,act_z" }, // EWING NDI 2 logging
     { LOG_EWNDI_INIT, sizeof(log_ew_ndi_init),
       "EWNI", "fffffffff", "invi11,invi12,invi13,invi21,invi22,invi23,invi31,invi32,invi33" }, // EWING NDI logging 
 #if OPTFLOW == ENABLED

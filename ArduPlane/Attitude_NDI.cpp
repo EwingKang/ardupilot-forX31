@@ -8,6 +8,7 @@ void Plane::ndi_ewing(float speed_scaler)
     bool reset_i;
     uint32_t tnow = AP_HAL::millis();
 	uint32_t dt = tnow - _last_t;
+    reset_i = false;
     if (_last_t == 0 || dt > 1000) {
 		dt = 0;
         reset_i = true;
@@ -64,9 +65,7 @@ void Plane::ndi_ewing(float speed_scaler)
         Vector3f omega_dot_des, omega_dot_dym;
         Vector3f actuator_command;
         omega_desired_rate(omega_command, omega_dot_des, delta_time, reset_i);
-        //EWING0608 ERR
-        //omega_c is correct, however, the act_x and act_z is inverted
-        //the suspects are omega_dot_dym and g_fRinv
+
         if(fast_dynamic_rate(omega_dot_dym)) {
             Matrix3f g_fR, g_fRinv;
             if( get_fl_input_mat(g_fR,g_fRinv) ) {
@@ -489,8 +488,10 @@ void Plane::update_thrust(const float &delta_time, const bool &reset_i)
     float thrust_cmd = channel_throttle->norm_input() * g.max_thrust_ew;
     if(reset_i) {
         thrust = thrust_cmd;
+        return;
     }
     thrust = thrust + (thrust_cmd - thrust) * g.ndi_thrust_bdwth_ew * delta_time;
+    return;
 }
 
 void Plane::ew_fbwa_backup(const float &speed_scaler)
@@ -504,7 +505,26 @@ void Plane::ew_fbwa_backup(const float &speed_scaler)
     if (g.stick_mixing == STICK_MIXING_DIRECT || control_mode == STABILIZE) {
         stabilize_stick_mixing_direct();
     }
+    
     stabilize_yaw(speed_scaler);
+    
+    // see if we should zero the attitude controller integrators. 
+    if (channel_throttle->get_control_in() == 0 &&
+        relative_altitude_abs_cm() < 500 && 
+        fabsf(barometer.get_climb_rate()) < 0.5f &&
+        gps.ground_speed() < 3) {
+        // we are low, with no climb rate, and zero throttle, and very
+        // low ground speed. Zero the attitude controller
+        // integrators. This prevents integrator buildup pre-takeoff.
+        rollController.reset_I();
+        pitchController.reset_I();
+        yawController.reset_I();
+
+        // if moving very slowly also zero the steering integrator
+        if (gps.ground_speed() < 1) {
+            steerController.reset_I();            
+        }
+    }
 }
 
 void Plane::ndi_calculate_inertia()
