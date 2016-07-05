@@ -55,4 +55,4 @@
 #define     NDI_FL_AOABFR_EW    2
 #define     NDI_AOABFR_UB_EW    50
 #define     NDI_AOABFR_LB_EW    30
-#define     NDI_THR_BDWTH_EW    2
+#define     NDI_THR_BDWTH_EW    7.5
